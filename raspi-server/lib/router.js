@@ -13,4 +13,7 @@ module.exports = (app) => {
         res.sendFile(path.resolve(__dirname + '/../public/turret-control.html'))
     })
 
+    app.get("/gyro-control", (req, res)=> {
+        res.sendFile(path.resolve(__dirname + '/../public/gyro-control.html'))
+    })
 }

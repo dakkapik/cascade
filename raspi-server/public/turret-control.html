@@ -25,6 +25,7 @@
   <body>
     <main>
     </main>
+    <button id="test-command"> TEST COMMAND </button>
   </body>
   <script src="/socket.io/socket.io.js"></script>
     <script>
@@ -60,5 +61,9 @@
             background(220);
             ellipse(200,200,150,150);
         }
+    </script>
+    <script>
+        const testButton = document.getElementById("test-command")
+        testButton.onclick = () => socket.emit("turret-command", 'THIS IS A TEST COMMAND')
     </script>
 </html>

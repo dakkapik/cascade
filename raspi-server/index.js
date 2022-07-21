@@ -1,4 +1,4 @@
-module.exports = ( linux ) => {
+module.exports = ( linux, device ) => {
     
     const { getIP } = require("./lib/helper");
     const port = process.env.PORT || 5000;
