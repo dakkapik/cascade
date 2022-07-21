@@ -24,7 +24,6 @@ module.exports = ( linux, device ) => {
                 const child = c_process.spawnChild()
     
                 child.on('data', (data) =>{
-                    console.log("data going")
                     socket.emit("gyro-data", data)
                 })
                 
