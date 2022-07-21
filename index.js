@@ -1,8 +1,8 @@
 const os = require("os")
-const sysname = os.hostname()
 const linux = os.platform() === 'linux' ? true : false
 
 if(linux) {
+    const sysname = process.env.sys ? process.env.sys : os.hostname()
     const sysnames = ['raspi-gyro', 'raspi-server','raspi-turret'];
     const system = sysnames.indexOf(sysname) > -1 ? sysname : false;
 
