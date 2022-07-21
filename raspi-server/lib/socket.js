@@ -14,6 +14,8 @@ module.exports = (io, app) => {
       socket.on("disconnect", (reason) => lib.handleDisconnect(reason, socket.id))
 
       socket.on("turret-data", (data) => console.log(Buffer.from(data).toString()))
+
+      socket.on("gyro-data", (data) => console.log(Buffer.from(data).toString()))
   });
 
 
@@ -36,7 +38,7 @@ module.exports = (io, app) => {
     console.log("> DEVICE joined: ", purpose)
     lib.devices[purpose] = socketId
 
-    if (purpose === 'raspi-gyro') io.to(socketId).emit("init-gyro")
+    if (purpose === 'raspi-helmet') io.to(socketId).emit("init-gyro")
     if (purpose === 'raspi-turret') io.to(socketId).emit('init-turret')
   }
   
