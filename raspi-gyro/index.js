@@ -1,5 +1,3 @@
-const app = (linux) => {
+module.exports = (linux) => {
 
 }
-
-module.exports = app
