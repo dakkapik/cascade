@@ -2,6 +2,8 @@
 
 const { io } = require("socket.io-client")
 const config = require("./config")
+const {spawn } = require('child_process')
+const path = require("path")
 
 module.exports = ( linux, device ) => {
     /// IMPORT MAIN IP FROM HERE ^^^
@@ -33,9 +35,23 @@ module.exports = ( linux, device ) => {
                 })
 
             } else {
-                socket.on('turret-command', (command) => {
-                    console.log("command recieved: ", command)
+                const child = spawn('./a', [] , {
+                    stdio: ['pipe','pipe', process.stderr],
+                    cwd: path.resolve(path.join(__dirname,'src'))
                 })
+
+                // child.stdout.pipe(process.stdout)
+
+                child.stdout.on('data', (data) =>{
+                    socket.emit("turret-data", data)
+                })
+
+                socket.on("turret-command", (command) => {
+                    child.stdin.write(command + '\r\n')
+                })
+                // socket.on('turret-command', (command) => {
+                //     console.log("command recieved: ", command)
+                // })
             }
         } catch (err) {
             if(linux) {

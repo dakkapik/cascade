@@ -12,14 +12,24 @@ module.exports = (io, app) => {
       socket.on("turret-command", lib.handleTurretCommand)
 
       socket.on("disconnect", (reason) => lib.handleDisconnect(reason, socket.id))
+
+      socket.on("turret-data", (data) => console.log(Buffer.from(data).toString()))
   });
+
+
+
+
+
+
+
+
 
   lib.handleTurretCommand = ( command ) => io.to(lib.devices['raspi-turret']).emit('turret-command', command)
 
   lib.handleGyroCommand = ( command ) => io.to(lib.devices['raspi-gyro']).emit("gyro-command", command)
   
   lib.handleMouseControl = ( data ) => {
-    io.to(lib.devices['raspi-turret']).emit("canvas-pos", data)
+    io.to(lib.devices['raspi-turret']).emit("turret-command", data)
   }
 
   lib.handleConnect = (purpose, socketId) => {

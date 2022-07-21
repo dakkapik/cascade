@@ -1,7 +1,7 @@
 'use strict'
 const { io } = require("socket.io-client")
 const c_process = require("./c_process")
-const config = require("./config")
+const config = require("../raspi-turret/config")
 
 module.exports = ( linux, device ) => {
 
@@ -26,6 +26,7 @@ module.exports = ( linux, device ) => {
                 child.on('data', (data) =>{
                     socket.emit("gyro-data", data)
                 })
+                
                 socket.on('gyro-command', (command) => {
                     child.stdin.write(command + '\r\n')
                 })

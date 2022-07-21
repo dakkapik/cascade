@@ -18,7 +18,7 @@ if(linux) {
     
     if(system) {
         console.log('\x1b[32m%s\x1b[0m', "initiating system: ", system, " on mock mode")
-        require(`./${system}/index`)(false, sysname)
+        require(`./${system}/index`)(false, system)
     } else {
         console.error(new Error("process.env.sys requires a system name to start..."))
     }
