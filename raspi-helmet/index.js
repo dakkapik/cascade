@@ -12,7 +12,7 @@ module.exports = ( linux, device ) => {
         if(linux) {
             socket.emit("purpose", device)
         } else {
-            socket.emit("purpose", 'raspi-gyro')
+            socket.emit("purpose", 'raspi-helmet')
         }
     })
 
