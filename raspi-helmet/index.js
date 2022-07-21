@@ -23,7 +23,7 @@ module.exports = ( linux, device ) => {
                 await c_process.runBuild()
                 const child = c_process.spawnChild()
     
-                child.on('data', (data) =>{
+                child.stdout.on('data', (data) =>{
                     socket.emit("gyro-data", data)
                 })
                 
