@@ -52,6 +52,7 @@ module.exports = ( linux, device ) => {
                 })
                 
                 socket.on("turret-command", (command) => {
+                    console.log(command)
                     child.stdin.write(command + '\r\n')
                 })
 
