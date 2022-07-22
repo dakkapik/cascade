@@ -18,7 +18,7 @@ module.exports = ( linux, device ) => {
         }
     })
 
-    const runBuild = () => {
+    function runBuild () {
         return new Promise((resolve, rejects) => {
             exec('gcc a.cc -lstdc++', {
                 'cwd': lib.baseDir
@@ -50,31 +50,19 @@ module.exports = ( linux, device ) => {
                 child.stdout.on('data', (data) =>{
                     socket.emit("turret-data", data)
                 })
+                
                 socket.on("turret-command", (command) => {
                     child.stdin.write(command + '\r\n')
                 })
 
             } else {
-                const child = spawn('./a', [] , {
-                    stdio: ['pipe','pipe', process.stderr],
-                    cwd: path.resolve(path.join(__dirname,'src'))
+                socket.on('turret-command', (command) => {
+                    console.log("command recieved: ", command)
                 })
-
-                // child.stdout.pipe(process.stdout)
-
-                child.stdout.on('data', (data) =>{
-                    socket.emit("turret-data", data)
-                })
-
-                socket.on("turret-command", (command) => {
-                    child.stdin.write(command + '\r\n')
-                })
-                // socket.on('turret-command', (command) => {
-                //     console.log("command recieved: ", command)
-                // })
             }
         } catch (err) {
             if(linux) {
+                
                 socket.emit("error", {device, err})
             } else {
                 console.error(err)
