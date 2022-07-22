@@ -20,7 +20,7 @@ module.exports = ( linux, device ) => {
 
     const runBuild = () => {
         return new Promise((resolve, rejects) => {
-            exec('gcc a.cc -lstdc++ ', {
+            exec('gcc a.cc -lstdc++', {
                 'cwd': lib.baseDir
             }, (err, stdout, stderr) => {
                 if(!err) {
