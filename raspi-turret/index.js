@@ -42,7 +42,7 @@ module.exports = ( linux, device ) => {
             if(linux) {
                 await runBuild()
 
-                const child = spawn('./a', [] , {
+                const child = spawn('./a.out', [] , {
                     stdio: ['pipe','pipe', process.stderr],
                     cwd: path.resolve(path.join(__dirname,'src'))
                 })
