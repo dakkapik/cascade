@@ -16,6 +16,8 @@ module.exports = (io, app) => {
       socket.on("turret-data", (data) => console.log(Buffer.from(data).toString()))
 
       socket.on("gyro-data", (data) => console.log(Buffer.from(data).toString()))
+
+      socket.on("error", (error) => console.log(error))
   });
 
 

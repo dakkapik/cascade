@@ -21,7 +21,7 @@ module.exports = ( linux, device ) => {
     function runBuild () {
         return new Promise((resolve, rejects) => {
             exec('gcc a.cc -lstdc++', {
-                'cwd': lib.baseDir
+                'cwd': path.resolve(path.join(__dirname,'src'))
             }, (err, stdout, stderr) => {
                 if(!err) {
                     // change this, something better
