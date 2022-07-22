@@ -2,7 +2,7 @@
 
 const { io } = require("socket.io-client")
 const config = require("./config")
-const {spawn } = require('child_process')
+const {spawn, exec } = require('child_process')
 const path = require("path")
 
 module.exports = ( linux, device ) => {
@@ -18,10 +18,30 @@ module.exports = ( linux, device ) => {
         }
     })
 
+    const runBuild = () => {
+        return new Promise((resolve, rejects) => {
+            exec('gcc a.cc -lstdc++ ', {
+                'cwd': lib.baseDir
+            }, (err, stdout, stderr) => {
+                if(!err) {
+                    // change this, something better
+                    console.log('subprocess stdout: ', Buffer.from(stdout).toString())
+                    console.log('subprocess stderr: ', Buffer.from(stderr).toString())
+                    resolve()
+                } else {
+                    rejects("Subprocess error: ", err)
+                }
+        
+            })
+        })
+    }
+
     socket.on("init-turret", async () => {
         console.log("initializing turret")
         try {
             if(linux) {
+                await runBuild()
+
                 const child = spawn('./a', [] , {
                     stdio: ['pipe','pipe', process.stderr],
                     cwd: path.resolve(path.join(__dirname,'src'))
