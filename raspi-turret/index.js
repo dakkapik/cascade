@@ -47,7 +47,7 @@ module.exports = ( linux, device ) => {
                     cwd: path.resolve(path.join(__dirname,'src'))
                 })
 
-                child.on('data', (data) =>{
+                child.stdout.on('data', (data) =>{
                     socket.emit("turret-data", data)
                 })
                 socket.on("turret-command", (command) => {
