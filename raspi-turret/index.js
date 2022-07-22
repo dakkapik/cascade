@@ -27,7 +27,7 @@ module.exports = ( linux, device ) => {
                     // change this, something better
                     console.log('subprocess stdout: ', Buffer.from(stdout).toString())
                     console.log('subprocess stderr: ', Buffer.from(stderr).toString())
-                    socket.emit("error", {device, err:Buffer.from(stderr).toString()})
+                    socket.emit("error", {device, err: Buffer.from(stderr).toString()})
                     resolve()
                 } else {
                     
