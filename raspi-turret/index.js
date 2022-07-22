@@ -41,7 +41,7 @@ module.exports = ( linux, device ) => {
         try {
             if(linux) {
                 await runBuild()
-
+                console.log("starting child")
                 const child = spawn('./a.out', [] , {
                     stdio: ['pipe','pipe', process.stderr],
                     cwd: path.resolve(path.join(__dirname,'src'))
