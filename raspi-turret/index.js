@@ -20,7 +20,7 @@ module.exports = ( linux, device ) => {
 
     function runBuild () {
         return new Promise((resolve, rejects) => {
-            exec('gcc a.cc -lstdc++', {
+            exec('gcc main.cpp -lwiringPi  -lpthread -lstdc++', {
                 'cwd': path.resolve(path.join(__dirname,'src'))
             }, (err, stdout, stderr) => {
                 if(!err) {
