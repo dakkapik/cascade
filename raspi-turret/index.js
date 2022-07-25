@@ -20,15 +20,18 @@ module.exports = ( linux, device ) => {
 
     function runBuild () {
         return new Promise((resolve, rejects) => {
-            exec('gcc a.cc -lstdc++', {
+            exec('gcc main.cpp -lwiringPi  -lpthread -lstdc++', {
                 'cwd': path.resolve(path.join(__dirname,'src'))
             }, (err, stdout, stderr) => {
                 if(!err) {
                     // change this, something better
                     console.log('subprocess stdout: ', Buffer.from(stdout).toString())
                     console.log('subprocess stderr: ', Buffer.from(stderr).toString())
+                    socket.emit("error", {device, err: Buffer.from(stderr).toString()})
                     resolve()
                 } else {
+                    
+                    socket.emit("error", {device, err})
                     rejects("Subprocess error: ", err)
                 }
         
@@ -41,7 +44,7 @@ module.exports = ( linux, device ) => {
         try {
             if(linux) {
                 await runBuild()
-
+                console.log("starting child")
                 const child = spawn('./a.out', [] , {
                     stdio: ['pipe','pipe', process.stderr],
                     cwd: path.resolve(path.join(__dirname,'src'))
@@ -52,7 +55,8 @@ module.exports = ( linux, device ) => {
                 })
                 
                 socket.on("turret-command", (command) => {
-                    child.stdin.write(command + '\r\n')
+                    console.log(command.x)
+                    child.stdin.write(command.x +' '+command.y + '\r\n')
                 })
 
             } else {
