@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>turret mock</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@100&display=swap');
+        html,body {
+            font-family: 'Roboto', sans-serif;
+        }
+        html, body {
+            margin: 0;
+            padding: 0;
+        }
+        canvas {
+            display: block;
+        }
+
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/p5@1.4.1/lib/p5.js"></script>
+    
+  </head>
+  <body>
+    <main>
+    </main>
+    <button id="test-command"> TEST COMMAND </button>
+  </body>
+  <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const domain = (new URL(window.location.href));
+        const socket = io(domain.origin);
+        
+        socket.on("connect", () => socket.emit("purpose", "turret-mock"))
+    </script>
+    <script>
+        class circle {
+            constructor(x, y, r){
+                this.pos = {x, y}
+                this.radius = r;
+                this.angle = Math.PI;
+                this.fColor = "black";
+                this.mouseRel = {}
+                this.cRel = {
+                    x: Math.cos(this.angle) * this.radius + this.pos.x,
+                    y: Math.sin(this.angle) * this.radius + this.pos.y
+                };
+            }
+        }
+    </script>
+    <script>
+        function setup() {
+            createCanvas(800, 800);
+        }
+
+        function draw() {
+            if(mouseIsPressed){
+
+            }
+            background(220);
+            ellipse(200,200,150,150);
+        }
+    </script>
+    <script>
+        const testButton = document.getElementById("test-command")
+        testButton.onclick = () => socket.emit("turret-command", 'THIS-IS-A-TEST-COMMAND')
+    </script>
+</html>

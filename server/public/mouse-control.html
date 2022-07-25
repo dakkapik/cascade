@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Controls</title>
+    <style>
+        html, body {
+            box-sizing: border-box;
+        }
+    </style>
+</head>
+<body>
+    <canvas style="border-style: solid;"></canvas>
+    <h1></h1>
+    <h3>hold click to control</h3>
+</body>
+<script src="/socket.io/socket.io.js"></script>
+<script>
+    const domain = (new URL(window.location.href));
+    const range = document.getElementById("myRange")
+    
+    const socket = io(domain.origin);
+    
+    socket.on("connect", () => {
+        socket.emit("purpose", "mouse-controller")
+    })
+</script>
+<script>
+    const coords = document.querySelector("h1")
+    const canvas = document.querySelector("canvas")
+    const c = canvas.getContext("2d")
+    canvas.width = 600
+    canvas.height = 600
+    let control = false
+    
+    canvas.addEventListener("click", () => control = !control)
+
+    animate()
+    function animate () {
+        window.requestAnimationFrame(animate)
+
+        if(control) {
+            canvas.addEventListener("mousemove", emitMousePos)
+        } else {
+            canvas.removeEventListener("mousemove", emitMousePos)
+        }
+    
+    }
+
+    function emitMousePos (e) {
+        const mousePos =  getMousePos(canvas, e)
+        socket.emit("mouse-pos", mousePos)
+        traceMouse(mousePos)
+        displayCoords(mousePos)
+    }
+
+    function displayCoords(pos) {
+        coords.innerHTML = `X: ${pos.x} Y: ${pos.y}`
+    }
+
+    function traceMouse (pos) {
+        c.fillStyle = "white"
+        c.fillRect(0, 0, canvas.width, canvas.height)
+        c.beginPath()
+        c.moveTo(pos.x, 0)
+        c.lineTo(pos.x, pos.y)
+        c.lineTo(0, pos.y)
+        c.moveTo(pos.x, canvas.width)
+        c.lineTo(pos.x, pos.y)
+        c.lineTo(canvas.height, pos.y)
+        c.stroke()
+    }   
+
+    function getMousePos(canvas, evt) {
+        const rect = canvas.getBoundingClientRect();
+        return {
+            x: evt.clientX - rect.left,
+            y: evt.clientY - rect.top
+        };
+    }
+
+</script>
+</html>
