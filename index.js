@@ -1,9 +1,9 @@
 const os = require("os")
 const linux = os.platform() === 'linux' ? true : false
+const sysnames = ['helmet', 'server','turret'];
 
 if(linux) {
     const sysname = process.env.sys ? process.env.sys : os.hostname()
-    const sysnames = ['raspi-helmet', 'raspi-server','raspi-turret'];
     const system = sysnames.indexOf(sysname) > -1 ? sysname : false;
 
     if(system) {
@@ -13,7 +13,6 @@ if(linux) {
         console.log("hostname does not fit any subsystem description, cannot initiate...")
     }
 } else {
-    const sysnames = ['raspi-helmet', 'raspi-server','raspi-turret'];
     const system = sysnames.indexOf(process.env.sys) > -1 ? process.env.sys : false;
     
     if(system) {
