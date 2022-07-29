@@ -13,6 +13,7 @@
 </head>
 <body>
     <canvas></canvas>
+    <button id="test">test</button>
 </body>
 <script src="/socket.io/socket.io.js"></script>
 <script>
@@ -79,7 +80,7 @@
         }
 
         updateValue( value ) {
-            this.angle = value;
+            if(value) this.angle = value;
             this.draw()
         }
 
@@ -127,29 +128,79 @@
             this.x = x;
             this.y = y;
             this.r = r;
-            this.values = {
-                "X": new Axis(x, y, r, "X"),
-                "Y": new Axis(x+150, y, r, "Y"),
-                "Z": new Axis(x+300, y, r, "Z")
+            this.axis = {
+                "x": new Axis(x, y, r, "x"),
+                "y": new Axis(x+150, y, r, "y"),
+                "z": new Axis(x+300, y, r, "z")
             }
+            this.sampleRate = 5000;
+            this.prevAngle = this.getAngles()
+            this.acceleration = {}
+
+            setInterval(()=>{
+                const newAngles = this.getAngles()
+                this.acceleration = {
+                    x: newAngles.x - this.prevAngle.x,
+                    y: newAngles.y - this.prevAngle.y,
+                    z: newAngles.z - this.prevAngle.z
+                }
+                this.prevAngle = {...newAngles}
+            }, this.sampleRate)
+        }
+
+        getAcceleration() {
+            return this.acceleration
+        }
+
+        setSampleRate (value) {
+            //TODO: 
+            //SET SAMPLE RATE DINAMICALLY
+            this.sampleRate = value;
         }
 
         updateByMouse () {
-            Object.values(this.values).forEach(axis => axis.updateValueByMouse())
+            Object.values(this.axis).forEach(axis => axis.updateValueByMouse())
         }
 
         updateValue( data ) {
             Object.values(data).forEach( value => {
-                this.values[value.axis].updateValue(value.angle)
+                this.axis[value.axis].draw()
             })
         }
 
         getAngles() {
-            return Object.entries(this.values).map(([key, value]) => {
-                return {axis: key, angle: value.angle}
-            })
+            return {
+                x: this.axis.x.angle, 
+                y: this.axis.y.angle,
+                z: this.axis.z.angle
+            }
         }
     }
+    class Turret {
+        constructor (x, y, r) {
+            this.x = x;
+            this.y = y;
+            this.r = r;
+            this.axis = {
+                "x": new Axis(x, y, r, "x"),
+                "y": new Axis(x+150, y, r, "y"),
+                "z": new Axis(x+300, y, r, "z")
+            }
+        }
+
+        updateValue( data ) {
+            if(data){
+                Object.entries(data).forEach(([key, value])=> {
+                    this.axis[key].updateValue(value)
+                })
+            } else {
+                Object.values(this.axis).forEach( value => {
+                    value.updateValue()
+                })
+            }
+        }
+    }
+
 </script>
 <script>
     //EMITTER SHOULD ONLY EMIT DIFFERENCE BETWEEN 
@@ -159,15 +210,19 @@
     //OUTPUT SHOULD BE ACCELERATION
     //INPUT IS POSITION
     const emitter = new Gyroscope(100, 100, 60)
-    const receiver = new Gyroscope(100, 300, 60)
+    const receiver = new Turret(100, 300, 60)
+    document.getElementById("test").onclick = () => receiver.updateValue()
 
     canvas.addEventListener("click", () => {
-        Object.values(emitter.values).forEach((axis) => {
+        Object.values(emitter.axis).forEach((axis) => {
             axis.clicked( mousePos )
         })
     })
 
-    socketR.on("turret-command", (data) => receiver.updateValue(data))
+    socketR.on("turret-command", (data) => {
+        console.log(data)
+        receiver.updateValue(data)
+    })
 
     const animate = () => {
         window.requestAnimationFrame(animate)
@@ -175,11 +230,12 @@
         c.fillRect(0, 0, canvas.width, canvas.height)
         
         emitter.updateByMouse()
-        const noiceAngles = emitter.getAngles().map(val => {
-            return {axis: val.axis, angle: val.angle - Math.random() * 0.1}
-        })
-        socketE.emit('gyro-data', noiceAngles)
-        receiver.updateByMouse()
+        // const noiceAngles = emitter.getAngles().map(val => {
+        //     return {axis: val.axis, angle: val.angle - Math.random() * 0.1}
+        // })
+        // socketE.emit('gyro-data', noiceAngles)
+        socketE.emit('gyro-data', emitter.prevAngle)
+        receiver.updateValue()
     }
     animate();
 </script>
