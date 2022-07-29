@@ -18,6 +18,7 @@ class Gauge {
             "Y": new Axis("Y"),
             "Z": new Axis("Z")
         }
+        
     }
 
     updateValue( data ) {
