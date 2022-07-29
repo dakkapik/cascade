@@ -36,6 +36,10 @@ void listen_accl_coordinate(mpu *m) {
    m->accl = result;
 }
 
+void listen_clock_rate(mpu *m) {
+    m->sample_rate = read_raw_data(m->fd, SMPLRT_DIV);
+}
+
 void mpu_init(mpu* m, int address) {
     m->fd = wiringPiI2CSetup(address);
 
@@ -43,6 +47,10 @@ void mpu_init(mpu* m, int address) {
         fprintf(stderr, "Error initializing mpu with address provided: %i, error: %i", address, m->fd);
         return;
     }
+
+    //Setting bit 4 and 5 to 0 to congif the register GYRO_CONFIG to a full range of +- 250 degrees per second 
+    #define mask 0x18 // binary equivalent: 00011000
+    
 
     write(m, SMPLRT_DIV, 0X07);  // Set sample register default to 7
     write(m, PWR_MGMT_1, 0x01);  // Write to power managment register
