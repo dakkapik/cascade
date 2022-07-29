@@ -17,7 +17,14 @@ lib.getIP = () => {
             }
         }
     }
-    return results
+
+    // if(process.platform === 'win32') ip = ipGet()["Ethernet"][0]
+    switch(process.platform) {
+        case "linux": return results["wlan0"][0]
+        case "win32": return results["Wi-Fi"][0]
+        case "darwin":return results["en0"][0]
+        default: throw new Error("OPERATING SYSTEM NOT WITHIN SCOPE")
+    }
 }
 
 module.exports = lib;

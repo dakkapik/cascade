@@ -13,12 +13,8 @@ module.exports = ( linux, device ) => {
 
     app.use(express.static("public"))
 
-    let ip
-    if(process.platform === "linux") ip = getIP()["wlan0"][0]
-    if(process.platform === 'win32') ip = getIP()["Wi-Fi"][0]
-    if(process.platform === 'darwin') ip = getIP()["en0"][0]
-    // if(process.platform === 'win32') ip = ipGet()["Ethernet"][0]
-
+    const ip = getIP()
+    
     require("./lib/router")(app)
     require("./lib/socket")(io, app)
 
