@@ -133,12 +133,17 @@
                 "y": new Axis(x+150, y, r, "y"),
                 "z": new Axis(x+300, y, r, "z")
             }
+
+            this.sampleMode = true
+
             this.sampleRate = 100;
+            this.transmisionRate = 100;
+            this.sampleTrigger = 100; 
+
             this.prevAngle = this.getAngles()
             this.acceleration = {}
-            this.transmisionRate = 100;
             this.emitter = null;
-            this.noiceScale = 0.0001
+            this.noiceScale = 0.0001;
 
             setInterval(()=>{
                 const newAngles = this.getAngles()
@@ -157,10 +162,25 @@
 
         emitAcceleration () {
             if(this.emitter != null) clearInterval(this.emitter)
+            let iteration = 0;
 
             this.emitter = setInterval(() => {
-                // console.log(this.acceleration)
-                socketE.emit('gyro-data', this.getAcceleration())
+
+                //SLOW EMITION RATE / SAMPLE RATE?
+                if(this.sampleMode){
+                    socketE.emit('gyro-data', this.getAcceleration())
+                    
+                    if(iteration <= this.sampleTrigger) {
+                        iteration ++
+                        console.log(iteration)
+                        this.sampleMode = false
+                        socketE.emit('gyro-sample-trigger')
+                    }
+                } else {
+                    socketE.emit('gyro-data', this.getAcceleration())
+                    //THIS SERVES NO PUPOSE AFTER DONE, DO BETTER
+                }
+
             }, this.transmisionRate)
         }
 
@@ -243,14 +263,9 @@
     })
 
     socketR.on("turret-command", (data) => {
-        // console.log(data)
+        console.log(data)
         receiver.updateValue(data)
     })
-
-
-    console.log(emitter.getAcceleration())
-        socketE.emit('gyro-data', )
-
 
     const animate = () => {
         window.requestAnimationFrame(animate)
@@ -258,10 +273,6 @@
         c.fillRect(0, 0, canvas.width, canvas.height)
         
         emitter.updateByMouse()
-        // const noiceAngles = emitter.getAngles().map(val => {
-        //     return {axis: val.axis, angle: val.angle - Math.random() * 0.1}
-        // })
-        // socketE.emit('gyro-data', noiceAngles)
         
         receiver.updateValue()
     }
