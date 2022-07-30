@@ -2,6 +2,7 @@ const os = require("os")
 const linux = os.platform() === 'linux' ? true : false
 const sysnames = ['helmet', 'server','turret'];
 
+
 if(linux) {
     const sysname = process.env.sys ? process.env.sys : os.hostname()
     const system = sysnames.indexOf(sysname) > -1 ? sysname : false;

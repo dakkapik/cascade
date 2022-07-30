@@ -1,6 +1,12 @@
-module.exports = (io, app) => {
+module.exports = (io, app, interface) => {
+
+  const Gauge = require("../class/Gauge")
+
+  const digitalGyro = new Gauge()
+
   const lib = {}
   lib.devices = {}
+  lib.deviceLogId = interface.addItem("DEVICE", JSON.stringify(lib.devices))
 
   io.on("connection", (socket) => {
       socket.on("purpose", (purpose) => lib.handleConnect(purpose, socket.id))
@@ -15,19 +21,24 @@ module.exports = (io, app) => {
 
       socket.on("turret-data", (data) => console.log(Buffer.from(data).toString()))
 
-      socket.on("gyro-data", (data) => {
-        // do not send data directly, apply filter first
-        // change this to only target turret if there is no mock
-        io.emit("turret-command", data)
+      socket.on("gyro-sample-trigger", () => {
+        interface.addItem('SERVER', 'CALCULATING FILTER', 1000 * 30)
+        digitalGyro.calcFilter()
       })
 
-      socket.on("error", (error) => console.log(error))
+      socket.on("gyro-data", (data) => {
+        digitalGyro.updateValue(data)
+
+        //TODO: 
+        // change this to only target turret if there is no mock
+        
+        if(!digitalGyro.sampleMode) io.emit("turret-command", digitalGyro.getAngles())
+      })
+
+      // ERRORS EXPIRE? ON FIX ERROR? 
+      // DEFINETLY HIGH IMPORTANCE
+      socket.on("error", (error) => interface.addItem("SERVER", error, 1000 * 120))
   });
-
-
-
-
-
 
 
 
@@ -41,9 +52,11 @@ module.exports = (io, app) => {
   }
 
   lib.handleConnect = (purpose, socketId) => {
-    console.log("> DEVICE joined: ", purpose)
+
     lib.devices[purpose] = socketId
 
+    interface.updateItem(lib.deviceLogId, lib.devices)
+    
     if (purpose === 'raspi-helmet') io.to(socketId).emit("init-gyro")
     if (purpose === 'raspi-turret') io.to(socketId).emit('init-turret')
   }
@@ -52,7 +65,8 @@ module.exports = (io, app) => {
     Object.entries(lib.devices).forEach(([key, value]) => {
       if(socketId === value){
         delete lib.devices[key]
-        console.log("> DEVICE: ", key, "disconnected, reason: ", reason)
+        interface.updateItem(lib.deviceLogId, lib.devices)
+        interface.addItem("SERVER", key + "disconnected, reason: "+ reason, 30 * 1000)
       }
     })
   }

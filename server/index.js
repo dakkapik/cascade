@@ -1,5 +1,5 @@
 module.exports = ( linux, device ) => {
-    
+    const interface = require("./lib/interface")
     const { getIP } = require("./lib/helper");
     const port = process.env.PORT || 5000;
 
@@ -16,10 +16,11 @@ module.exports = ( linux, device ) => {
     const ip = getIP()
     
     require("./lib/router")(app)
-    require("./lib/socket")(io, app)
+    require("./lib/socket")(io, app, interface)
 
     server.listen(port, ()=>{
-        console.log('> listening on : http://' + ip + ":" + port);
+        interface.addItem('SERVER', '> listening on : http://' + ip + ":" + port, 1000 * 10)
+        interface.update()
     })
 
 }
