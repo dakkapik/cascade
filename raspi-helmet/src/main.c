@@ -7,7 +7,7 @@ int main(int argc, char* argv[]) {
     mpu_init(&m, 0x68);
 
     mpu_set_sample_rate(&m, 0x07);
-    printf("$ %f\n", m->sample_rate);
+    printf("$ %f\n", m.sample_rate);
 
     //Runtime of the chip
     while (1) {
