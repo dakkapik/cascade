@@ -19,12 +19,19 @@ struct coordinate {
 
 coordinate parseDataInput(std::string& input) {
 
+    //array that will hold the values translated from a string to double in order
+    //meaning values[0] is angular velocity x and values[1] is angular velocity y ...
     std::vector<double> values;
 
+    // indexes that represent the index of the character of the string
     int begin = 0;
     int last  = 0;
 
+    //Check that the index last is still in bounds of the string
     while (last <= input.length()) {
+        //if we find that last points to ' ' or '\0' (end of line sentinel) then
+        //we take the distance from begining to last - 1 (substract one since last in ' ')
+        //take a substring from begining to distance and convert it to a double, advance last and beging = last
         if (input[last] == ' ' || input[last] == '\0') {
             values.push_back(std::stof(input.substr(begin, begin - last - 1)));
             begin = ++last;
@@ -34,10 +41,12 @@ coordinate parseDataInput(std::string& input) {
         }
     }
 
+    //There must be 6 values in values becuase is 3 angular and 3 linear no more no less
     if (values.size() != 6) {
         std::cerr << "[ERROR] Number of arguments is different than 6" << std::endl;
     }
 
+    //initializate object with respective values and return
     coordinate result =  {values[0], values[1], values[2], values[3], values[4], values[5]};
     return result;
 }
