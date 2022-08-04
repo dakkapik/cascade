@@ -173,6 +173,7 @@
                     if(iteration <= this.sampleTrigger) {
                         iteration ++
                         console.log(iteration)
+                    } else {
                         this.sampleMode = false
                         socketE.emit('gyro-sample-trigger')
                     }
