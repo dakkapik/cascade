@@ -32,6 +32,7 @@ class Gauge {
         // this.popSize = 200;
         // this.diviationMultiplier = 2;
         this.diviationMultiplier = 0;
+        this.sampleRate = 100;
     }
 
     calcFilter () {
@@ -65,7 +66,7 @@ class Gauge {
             this.sampleRepo.z.push(data.z)
         } else {
             Object.entries(data).forEach(([key, value]) => {
-                if(value > this.filter[key].top || value < this.filter[key].bottom) this.axis[key].updateValue(value)
+                if(value > this.filter[key].top || value < this.filter[key].bottom) this.axis[key].updateValue(value * this.sampleRate)
             })
         }
         

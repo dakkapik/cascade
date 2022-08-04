@@ -141,16 +141,24 @@
             this.sampleTrigger = 100; 
 
             this.prevAngle = this.getAngles()
-            this.acceleration = {}
+            this.displacement = {}
+            this.velocity = {}
             this.emitter = null;
             this.noiceScale = 0.0001;
 
             setInterval(()=>{
                 const newAngles = this.getAngles()
-                this.acceleration = {
-                    x: (newAngles.x - this.prevAngle.x) + this.getNoice(),
-                    y: (newAngles.y - this.prevAngle.y) + this.getNoice(),
-                    z: (newAngles.z - this.prevAngle.z) + this.getNoice()
+
+                this.displacement = {
+                    x: (newAngles.x - this.prevAngle.x),
+                    y: (newAngles.y - this.prevAngle.y),
+                    z: (newAngles.z - this.prevAngle.z)
+                }
+
+                this.velocity = {
+                    x: this.displacement.x / this.sampleRate + this.getNoice(),
+                    y: this.displacement.y / this.sampleRate + this.getNoice(),
+                    z: this.displacement.z / this.sampleRate + this.getNoice()
                 }
                 this.prevAngle = {...newAngles}
             }, this.sampleRate)
@@ -160,7 +168,7 @@
             return Math.sin(Math.random() * (Math.PI * 2)) * this.noiceScale
         }
 
-        emitAcceleration () {
+        emitVelocity () {
             if(this.emitter != null) clearInterval(this.emitter)
             let iteration = 0;
 
@@ -168,7 +176,7 @@
 
                 //SLOW EMITION RATE / SAMPLE RATE?
                 if(this.sampleMode){
-                    socketE.emit('gyro-data', this.getAcceleration())
+                    socketE.emit('gyro-data', this.getVelocity())
                     
                     if(iteration <= this.sampleTrigger) {
                         iteration ++
@@ -178,15 +186,15 @@
                         socketE.emit('gyro-sample-trigger')
                     }
                 } else {
-                    socketE.emit('gyro-data', this.getAcceleration())
+                    socketE.emit('gyro-data', this.getVelocity())
                     //THIS SERVES NO PUPOSE AFTER DONE, DO BETTER
                 }
 
             }, this.transmisionRate)
         }
 
-        getAcceleration() {
-            return this.acceleration
+        getVelocity() {
+            return this.velocity
         }
 
         setSampleRate (value) {
@@ -255,7 +263,7 @@
 
     document.getElementById("test").onclick = () => receiver.updateValue()
 
-    emitter.emitAcceleration()
+    emitter.emitVelocity()
 
     canvas.addEventListener("click", () => {
         Object.values(emitter.axis).forEach((axis) => {
