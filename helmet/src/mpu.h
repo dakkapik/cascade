@@ -49,6 +49,9 @@ typedef struct {
     //File descriptor, usefull for error handling stderr, stdin, stdout
     int fd;
 
+    //value of the sample rate of the chip, only changes twice during the live of the program
+    double sample_rate;
+
     //Properties with the current coordinates of gyroscope and accelerometer
     coordinate gyro;
     coordinate accl;
@@ -58,6 +61,7 @@ void mpu_init(mpu *m, int address);
 
 void listen_gyro_coordinate(mpu *m);  // unit: degrees / second
 void listen_accl_coordinate(mpu *m);  // unit: g
+void listen_clock_rate(mpu *m);       // unit: Hertz
 
 void mpu_set_sample_rate(mpu *m, int value); //set the sample rate of the clock
 
