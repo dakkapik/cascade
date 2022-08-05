@@ -27,7 +27,18 @@ module.exports = (io, app, interface) => {
       })
 
       socket.on("gyro-data", (data) => {
-        digitalGyro.updateValue(data)
+        if(data.toString()[0] === '$'){
+          digitalGyro.calcFilter()
+          interface.addItem('SERVER', 'CALCULATING FILTER', 1000 * 30)
+          //change sample rate
+        } else {
+          const gData = data.toString().split(' ')
+          digitalGyro.updateValue({
+            x: gData[0],
+            y: gData[1],
+            z: gData[2]
+          })
+        }
 
         //TODO: 
         // change this to only target turret if there is no mock
