@@ -13,8 +13,9 @@
 #define servo_yaw   7       // Define the GPIO number connected to servo
 
 struct coordinate {
-    double angx, angy, angz; //angular velocity values
-    double accx, accy, accz; // linear acceleration values
+    double angx;
+    double angy;
+    double angz;
 };
 
 coordinate parseDataInput(std::string& input) {
@@ -47,7 +48,7 @@ coordinate parseDataInput(std::string& input) {
     }
 
     //initializate object with respective values and return
-    coordinate result =  {values[0], values[1], values[2], values[3], values[4], values[5]};
+    coordinate result =  {values[0], values[1], values[2]};
     return result;
 }
 
