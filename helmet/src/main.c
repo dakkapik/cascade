@@ -14,7 +14,7 @@ int main(int argc, char* argv[]) {
     while (cycles < 500) { 
         listen_gyro_coordinate(&m);
         listen_accl_coordinate(&m);
-        printf("\r%f %f %f %f %f %f", m.gyro.x, m.gyro.y, m.gyro.z,  m.accl.x, m.accl.y, m.accl.z);
+        printf("%f %f %f %f %f %f", m.gyro.x, m.gyro.y, m.gyro.z,  m.accl.x, m.accl.y, m.accl.z);
         fflush(stdout);
         cycles++;
     }
@@ -26,7 +26,7 @@ int main(int argc, char* argv[]) {
     while (1) {
         listen_gyro_coordinate(&m);
         listen_accl_coordinate(&m);
-        printf("\r%f %f %f %f %f %f", m.gyro.x, m.gyro.y, m.gyro.z,  m.accl.x, m.accl.y, m.accl.z);
+        printf("%f %f %f %f %f %f", m.gyro.x, m.gyro.y, m.gyro.z,  m.accl.x, m.accl.y, m.accl.z);
         fflush(stdout);
     }
 
