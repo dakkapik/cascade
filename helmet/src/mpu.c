@@ -19,9 +19,9 @@ short read_raw_data(int fd, int addr) {
 }
 
 void listen_gyro_coordinate(mpu *m) {
-    float gx = read_raw_data(m->fd, GYRO_XOUT_H) / 131;
-    float gy = read_raw_data(m->fd, GYRO_YOUT_H) / 131;
-    float gz = read_raw_data(m->fd, GYRO_ZOUT_H) / 131;
+    float gx = read_raw_data(m->fd, GYRO_XOUT_H) / 131.0;
+    float gy = read_raw_data(m->fd, GYRO_YOUT_H) / 131.0;
+    float gz = read_raw_data(m->fd, GYRO_ZOUT_H) / 131.0;
 
     coordinate result = {gx, gy, gz};
     m->gyro = result;
