@@ -27,7 +27,6 @@ module.exports = (io, app, interface) => {
       })
 
       socket.on("gyro-data", (data) => {
-        console.log(data)
         digitalGyro.updateValue(data)
 
         //TODO: 
@@ -44,12 +43,12 @@ module.exports = (io, app, interface) => {
 
 
 
-  lib.handleTurretCommand = ( command ) => io.to(lib.devices['raspi-turret']).emit('turret-command', command)
+  lib.handleTurretCommand = ( command ) => io.to(lib.devices['turret']).emit('turret-command', command)
 
-  lib.handleGyroCommand = ( command ) => io.to(lib.devices['raspi-gyro']).emit("gyro-command", command)
+  lib.handleGyroCommand = ( command ) => io.to(lib.devices['helmet']).emit("gyro-command", command)
   
   lib.handleMouseControl = ( data ) => {
-    io.to(lib.devices['raspi-turret']).emit("turret-command", data)
+    io.to(lib.devices['turret']).emit("turret-command", data)
   }
 
   lib.handleConnect = (purpose, socketId) => {
@@ -58,8 +57,8 @@ module.exports = (io, app, interface) => {
 
     interface.updateItem(lib.deviceLogId, lib.devices)
     
-    if (purpose === 'raspi-helmet') io.to(socketId).emit("init-gyro")
-    if (purpose === 'raspi-turret') io.to(socketId).emit('init-turret')
+    if (purpose === 'helmet') io.to(socketId).emit("init-gyro")
+    if (purpose === 'turret') io.to(socketId).emit('init-turret')
   }
   
   lib.handleDisconnect = ( reason, socketId )  => {

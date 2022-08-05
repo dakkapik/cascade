@@ -25,8 +25,6 @@ module.exports = ( linux, device ) => {
     
                 child.stdout.on('data', (data) =>{
                     // socket.emit('gyro-sample-trigger')
-
-                    console.log(data)
                     socket.emit("gyro-data", data)
                 })
                 
