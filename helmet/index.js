@@ -1,7 +1,7 @@
 'use strict'
 const { io } = require("socket.io-client")
 const c_process = require("./c_process")
-const config = require("../raspi-turret/config")
+const config = require("./config")
 
 module.exports = ( linux, device ) => {
 
