@@ -16,7 +16,6 @@ struct coordinate {
     double angx;
     double angy;
     double angz;
-
 };
 
 coordinate parseDataInput(std::string& input) {
