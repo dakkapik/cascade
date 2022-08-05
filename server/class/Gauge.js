@@ -32,7 +32,7 @@ class Gauge {
         // this.popSize = 200;
         // this.diviationMultiplier = 2;
         this.diviationMultiplier = 0;
-        this.sampleRate = 100;
+        this.sampleRate = 1;
     }
 
     calcFilter () {
@@ -40,6 +40,7 @@ class Gauge {
         this.calcAxisFilter('y')
         this.calcAxisFilter('z')
         this.sampleMode = false
+        this.sampleRate = 2
     }
 
     calcAxisFilter( axis ) {
