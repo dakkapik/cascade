@@ -27,6 +27,7 @@ module.exports = (io, app, interface) => {
       })
 
       socket.on("gyro-data", (data) => {
+        console.log(data)
         digitalGyro.updateValue(data)
 
         //TODO: 

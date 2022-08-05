@@ -24,6 +24,9 @@ module.exports = ( linux, device ) => {
                 const child = c_process.spawnChild()
     
                 child.stdout.on('data', (data) =>{
+                    // socket.emit('gyro-sample-trigger')
+
+                    console.log(data)
                     socket.emit("gyro-data", data)
                 })
                 
