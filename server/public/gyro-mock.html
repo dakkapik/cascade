@@ -20,12 +20,12 @@
     const domain = (new URL(window.location.href));
     const range = document.getElementById("myRange")
     
-    const socketE = io(domain.origin);
+    // const socketE = io(domain.origin);
     const socketR = io(domain.origin);
     
-    socketE.on("connect", () => {
-        socketE.emit("purpose", "mock-emitter")
-    })
+    // socketE.on("connect", () => {
+    //     socketE.emit("purpose", "mock-emitter")
+    // })
     socketR.on("connect", () => {
         socketR.emit("purpose", "mock-reciver")
     })
