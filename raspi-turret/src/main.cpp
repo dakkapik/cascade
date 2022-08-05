@@ -41,9 +41,9 @@ coordinate parseDataInput(std::string& input) {
         }
     }
 
-    //There must be 6 values in values becuase is 3 angular and 3 linear no more no less
-    if (values.size() != 6) {
-        std::cerr << "[ERROR] Number of arguments is different than 6" << std::endl;
+    //There must be 3 values in values becuase is 3 angular velocities
+    if (values.size() != 3) {
+        std::cerr << "[ERROR] Number of arguments is different than 3" << std::endl;
     }
 
     //initializate object with respective values and return
