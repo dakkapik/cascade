@@ -19,8 +19,7 @@ module.exports = ( linux, device ) => {
     require("./lib/socket")(io, app, interface)
 
     server.listen(port, ()=>{
-        interface.addItem('SERVER', '> listening on : http://' + ip + ":" + port, 1000 * 10)
-        interface.update()
+        interface.log('SERVER', '> listening on : http://' + ip + ":" + port, 1000 * 10)
     })
 
 }

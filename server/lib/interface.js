@@ -2,6 +2,8 @@ const lib = {}
 
 lib.content = {}
 
+lib.users = {}
+
 lib.animate = (frameRate) => {
     setInterval(()=> {
         console.clear()
@@ -11,18 +13,23 @@ lib.animate = (frameRate) => {
 
 lib.update = () => {
     console.clear()
-    lib.renderItems()
+    lib.render()
 } 
 
-lib.renderItems = () => {
-    Object.values(lib.content).forEach((value) => {
-        console.log(value)
+lib.render = () => {
+    console.table(lib.users)
+    Object.values(lib.content).forEach(({message, color})=> {
+        if(color) {
+            console.log(color, message)
+        } else {
+            console.log(message)
+        }
     })
 }
 
-lib.addItem = (user, item, expire = 0, color) => {
+lib.log = (user, item, expire = 0, color) => {
     // TODO: 
-    ///ADD COLOR DEPENDING ON IMPORTANCE^^^^
+    ///ADD COLOR DEPENDING ON IMPORTANCE  ^^^^
     // COLOR SWITCH BASED ON IMPORTANCE
     const key = Date.now()
     if(expire > 0) {
@@ -31,9 +38,15 @@ lib.addItem = (user, item, expire = 0, color) => {
             lib.update()
         }, expire)
     }
-    lib.content[key] = `> ${user}: ${item}`
+
+    lib.content[key] = {message: `> ${user}: ${item}`, color}
     lib.update()
     return key
+}
+
+lib.updateUsers = ( users ) => {
+    lib.users = users
+    lib.update()
 }
 
 lib.updateItem = (key, update) => {

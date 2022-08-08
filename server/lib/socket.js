@@ -6,7 +6,8 @@ module.exports = (io, app, interface) => {
 
   const lib = {}
   lib.devices = {}
-  lib.deviceLogId = interface.addItem("DEVICE", JSON.stringify(lib.devices))
+
+  lib.deviceLogId = interface.updateUsers(lib.devices)
 
   io.on("connection", (socket) => {
       socket.on("purpose", (purpose) => lib.handleConnect(purpose, socket.id))
@@ -22,14 +23,14 @@ module.exports = (io, app, interface) => {
       socket.on("turret-data", (data) => console.log(Buffer.from(data).toString()))
 
       socket.on("gyro-sample-trigger", () => {
-        interface.addItem('SERVER', 'CALCULATING FILTER', 1000 * 30)
+        interface.log('SERVER', 'CALCULATING FILTER', 1000 * 30)
         digitalGyro.calcFilter()
       })
 
       socket.on("gyro-data", (data) => {
         if(data.toString()[0] === '$'){
           digitalGyro.calcFilter()
-          interface.addItem('SERVER', 'CALCULATING FILTER', 1000 * 30)
+          interface.log('SERVER', 'CALCULATING FILTER', 1000 * 30)
           //change sample rate
         } else {
           const gData = data.toString().split(' ')
@@ -48,11 +49,8 @@ module.exports = (io, app, interface) => {
 
       // ERRORS EXPIRE? ON FIX ERROR? 
       // DEFINETLY HIGH IMPORTANCE
-      socket.on("error", (error) => interface.addItem("SERVER", error, 1000 * 120))
+      socket.on("error", (error) => interface.log("SERVER", error, 1000 * 120))
   });
-
-
-
 
   lib.handleTurretCommand = ( command ) => io.to(lib.devices['turret']).emit('turret-command', command)
 
@@ -66,7 +64,7 @@ module.exports = (io, app, interface) => {
 
     lib.devices[purpose] = socketId
 
-    interface.updateItem(lib.deviceLogId, lib.devices)
+    interface.updateUsers(lib.devices)
     
     if (purpose === 'helmet') io.to(socketId).emit("init-gyro")
     if (purpose === 'turret') io.to(socketId).emit('init-turret')
@@ -76,8 +74,8 @@ module.exports = (io, app, interface) => {
     Object.entries(lib.devices).forEach(([key, value]) => {
       if(socketId === value){
         delete lib.devices[key]
-        interface.updateItem(lib.deviceLogId, lib.devices)
-        interface.addItem("SERVER", key + "disconnected, reason: "+ reason, 30 * 1000)
+        interface.updateUsers(lib.devices)
+        interface.log("SERVER", key + "disconnected, reason: "+ reason, 30 * 1000)
       }
     })
   }
