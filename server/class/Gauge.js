@@ -1,13 +1,23 @@
 class Axis {
     constructor(name){
+        //get sample rate time from super class
+        this.prevAngle = 0;
         this.angle = 0;
         this.name = name;
+        this.first = true;
     }
     
     updateValue( value ) {
         //TODO:
         //limit angle after full circle return to initial pos
-        this.angle += value;
+
+        // using 2 for time, change to get from super class after
+        const time = 1;
+        const DEVIATION = 0
+        // GET DEVIATION MULTIPLIER FROM SUPER CLASS
+        this.prevAngle = this.angle
+        this.angle = this.prevAngle - value + (time) * (this.angle - this.prevAngle - DEVIATION)/( 2 * 1000 * 131)
+    
     }
 }
 
