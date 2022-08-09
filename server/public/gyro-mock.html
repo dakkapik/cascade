@@ -29,6 +29,8 @@
     socketR.on("connect", () => {
         socketR.emit("purpose", "mock-reciver")
     })
+
+    socketR.on("turret-log", (gyro) => console.log(gyro))
 </script>
 <script>
     const canvas = document.querySelector("canvas")
@@ -180,7 +182,7 @@
                     
                     if(iteration <= this.sampleTrigger) {
                         iteration ++
-                        console.log(iteration)
+                        // console.log(iteration)
                     } else {
                         this.sampleMode = false
                         socketE.emit('gyro-sample-trigger')
@@ -258,21 +260,21 @@
 
     //OUTPUT SHOULD BE ACCELERATION
     //INPUT IS POSITION
-    const emitter = new Gyroscope(100, 100, 60)
+    // const emitter = new Gyroscope(100, 100, 60)
     const receiver = new Turret(100, 300, 60)
 
     document.getElementById("test").onclick = () => receiver.updateValue()
 
-    emitter.emitVelocity()
+    // emitter.emitVelocity()
 
-    canvas.addEventListener("click", () => {
-        Object.values(emitter.axis).forEach((axis) => {
-            axis.clicked( mousePos )
-        })
-    })
+    // canvas.addEventListener("click", () => {
+    //     Object.values(emitter.axis).forEach((axis) => {
+    //         axis.clicked( mousePos )
+    //     })
+    // })
 
     socketR.on("turret-command", (data) => {
-        console.log(data)
+        // console.log(data)
         receiver.updateValue(data)
     })
 
@@ -281,7 +283,7 @@
         c.fillStyle = "#b5b3b3"
         c.fillRect(0, 0, canvas.width, canvas.height)
         
-        emitter.updateByMouse()
+        // emitter.updateByMouse()
         
         receiver.updateValue()
     }

@@ -26,24 +26,39 @@ module.exports = (io, app, interface) => {
         digitalGyro.calcFilter()
       })
 
+      let i = 0;
       socket.on("gyro-data", (data) => {
         if(data.toString()[0] === '$'){
-          digitalGyro.calcFilter()
-          interface.addItem('SERVER', 'CALCULATING FILTER', 1000 * 30)
+          console.log("TRIGGER DETECTED")
+          if(i == 0){
+            i++
+            console.log("INITIALIZING SAMPLE")
+          }else {
+            digitalGyro.calcFilter()
+            interface.addItem('SERVER', 'CALCULATING FILTER', 1000 * 30)
+          }
           //change sample rate
         } else {
           const gData = data.toString().split(' ')
+          // console.log(gData)
+          // console.log(parseFloat(gData[0]))
+          // console.log(parseFloat(gData[1]))
+          // console.log(parseFloat(gData[2]))
           digitalGyro.updateValue({
-            x: gData[0],
-            y: gData[1],
-            z: gData[2]
+            x: parseFloat(gData[0]),
+            y: parseFloat(gData[1]),
+            z: parseFloat(gData[2])
           })
         }
 
         //TODO: 
         // change this to only target turret if there is no mock
         
-        if(!digitalGyro.sampleMode) io.emit("turret-command", digitalGyro.getAngles())
+        if(!digitalGyro.sampleMode) {
+          io.emit("turret-command", digitalGyro.getAngles())
+          io.emit("turret-log", digitalGyro)
+          // console.log(digitalGyro.getAngles())
+        }
       })
 
       // ERRORS EXPIRE? ON FIX ERROR? 

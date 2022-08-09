@@ -31,7 +31,7 @@ class Gauge {
         this.iteration = 0;
         // this.popSize = 200;
         // this.diviationMultiplier = 2;
-        this.diviationMultiplier = 0;
+        this.diviationMultiplier = 2;
         this.sampleRate = 1;
     }
 
@@ -39,6 +39,7 @@ class Gauge {
         this.calcAxisFilter('x')
         this.calcAxisFilter('y')
         this.calcAxisFilter('z')
+        console.log(this.filter)
         this.sampleMode = false
         this.sampleRate = 2
     }
@@ -67,7 +68,7 @@ class Gauge {
             this.sampleRepo.z.push(data.z)
         } else {
             Object.entries(data).forEach(([key, value]) => {
-                if(value > this.filter[key].top || value < this.filter[key].bottom) this.axis[key].updateValue(value * this.sampleRate)
+                if(value > this.filter[key].top || value < this.filter[key].bottom) this.axis[key].updateValue(value * (this.sampleRate / 1000))
             })
         }
         
