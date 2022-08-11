@@ -25,7 +25,12 @@ class Gauge {
             y: [],
             z: []
         }
-        this.filter = {};
+        this.filter = {
+            x: {top: 0, bottom:0},
+            y: {top: 0, bottom:0},
+            z: {top: 0, bottom:0}
+        };
+        this.filterActive = false;
         this.mean = {};
         this.standardDeviation = {};
         this.iteration = 0;
@@ -34,6 +39,16 @@ class Gauge {
         this.diviationMultiplier = 2;
         this.sampleRate = 1;
         this.rawData = ''
+    }
+
+    resetSampleMode() {
+        this.sampleMode = true;
+        this.sampleRepo = {
+            x: [],
+            y: [],
+            z: []
+        }
+        this.iteration = 0;
     }
 
     parseDataStream (string) {
@@ -49,11 +64,13 @@ class Gauge {
     getStateData() {
         if(this.sampleMode){
             return {
-                diviationMultiplier: this.diviationMultiplier,
-                sampleRate: this.sampleRate,
-                sampleMode: this.sampleMode,
-                dataStream: this.rawData,
-                iteration: this.iteration
+                values: {
+                    diviationMultiplier: this.diviationMultiplier,
+                    sampleRate: this.sampleRate,
+                    sampleMode: this.sampleMode,
+                    iteration: this.iteration,
+                },
+                dataStream: {stream: this.rawData},
             }
         } else {
             return {
@@ -72,10 +89,12 @@ class Gauge {
                     y: this.filter.y.bottom,
                     z: this.filter.z.bottom
                 },
-                diviationMultiplier: this.diviationMultiplier,
-                sampleRate: this.sampleRate,
-                sampleMode: this.sampleMode,
-                dataStream: this.rawData
+                values: {
+                    diviationMultiplier: this.diviationMultiplier,
+                    sampleRate: this.sampleRate,
+                    sampleMode: this.sampleMode,
+                },
+                dataStream: {stream: this.rawData}
             }
         }
     }
@@ -85,6 +104,7 @@ class Gauge {
         this.calcAxisFilter('y')
         this.calcAxisFilter('z')
         this.sampleMode = false
+        this.filterActive = true
         this.sampleRate = 2
     }
 
@@ -110,12 +130,13 @@ class Gauge {
             this.sampleRepo.x.push(data.x)
             this.sampleRepo.y.push(data.y)
             this.sampleRepo.z.push(data.z)
-        } else {
+        }
+
+        if(this.filterActive) {
             Object.entries(data).forEach(([key, value]) => {
                 if(value > this.filter[key].top || value < this.filter[key].bottom) this.axis[key].updateValue(value * this.sampleRate)
             })
         }
-        
     }
     
     getAngles() {
