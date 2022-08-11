@@ -36,8 +36,16 @@ void listen_accl_coordinate(mpu *m) {
    m->accl = result;
 }
 
+//The sample rate is given by: Sample rate = Gyroscope output rate / (1 + SMPLRT_DIV)
+// Gyroscope output rate is 8kHz if the DLPF (digital low pass filter) is disabled (which it is)
+// in case that the DLPF is enabled the Gyroscope output rate would drop to 1kHz
 void listen_clock_rate(mpu *m) {
-    m->sample_rate = read_raw_data(m->fd, SMPLRT_DIV);
+
+    //Check if the low pass filter is enabled if so the output rate is 1000 if not 8000
+    int gyro_output_rate = (read_raw_data(m->fd, CONFIG) != 0) ? 1000 : 8000;
+    int divisor = read_raw_data(m->fd, SMPLRT_DIV) + 1;
+
+    m->sample_rate = gyro_output_rate / divisor;
 }
 
 void mpu_init(mpu* m, int address) {
@@ -47,14 +55,10 @@ void mpu_init(mpu* m, int address) {
         fprintf(stderr, "Error initializing mpu with address provided: %i, error: %i", address, m->fd);
         return;
     }
-
-    //Setting bit 4 and 5 to 0 to congif the register GYRO_CONFIG to a full range of +- 250 degrees per second 
-    #define mask 0x18 // binary equivalent: 00011000
     
-
     write(m, SMPLRT_DIV, 0X07);  // Set sample register default to 7
     write(m, PWR_MGMT_1, 0x01);  // Write to power managment register
-    write(m, CONFIG, 0);         // Write to configuraiton register
+    write(m, CONFIG, 0);         // Write to configuraiton register (Low pass filter disabled when 0)
     write(m, GYRO_CONFIG, 24);   // Write to gyro configuration register
     write(m, INT_ENABLE, 0x01);  // Write to interrupt enable register
 }
