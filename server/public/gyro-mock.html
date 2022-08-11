@@ -6,26 +6,40 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gyro-testing</title>
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300&display=swap');
         html, body {
+            font-family: 'Roboto', sans-serif;
             margin: 0;
         }
     </style>
 </head>
 <body>
     <canvas></canvas>
-    <button id="test">test</button>
+    <div>
+        <button id="test">test</button>
+        <input type="checkbox" id="emitter-switch" name="emitter">
+        <label for="emitter">EMITTER</label>
+        <input type="checkbox" id="reciever-switch" name="reciever" value="reciever">
+        <label for="reciever">RECIEVER</label>
+
+    </div>
 </body>
 <script src="/socket.io/socket.io.js"></script>
 <script>
+    let emitter = {}
+    let receiver = {}
+    const emitterSwitch = document.getElementById("emitter-switch")
+    const recieverSwitch = document.getElementById("reciever-switch")
+
     const domain = (new URL(window.location.href));
     const range = document.getElementById("myRange")
     
-    // const socketE = io(domain.origin);
-    const socketR = io(domain.origin);
+    const socketE = io(domain.origin, { autoConnect: false });
+    const socketR = io(domain.origin, { autoConnect: false });
     
-    // socketE.on("connect", () => {
-    //     socketE.emit("purpose", "mock-emitter")
-    // })
+    socketE.on("connect", () => {
+        socketE.emit("purpose", "mock-emitter")
+    })
     socketR.on("connect", () => {
         socketR.emit("purpose", "mock-reciver")
     })
@@ -173,24 +187,27 @@
             let iteration = 0;
 
             this.emitter = setInterval(() => {
-
                 //SLOW EMITION RATE / SAMPLE RATE?
                 if(this.sampleMode){
-                    socketE.emit('gyro-data', this.getVelocity())
+                    socketE.emit('gyro-data', this.getFormatedVelocity())
                     
                     if(iteration <= this.sampleTrigger) {
                         iteration ++
-                        console.log(iteration)
+                        // console.log(iteration)
                     } else {
                         this.sampleMode = false
                         socketE.emit('gyro-sample-trigger')
                     }
                 } else {
-                    socketE.emit('gyro-data', this.getVelocity())
+                    socketE.emit('gyro-data', this.getFormatedVelocity())
                     //THIS SERVES NO PUPOSE AFTER DONE, DO BETTER
                 }
 
             }, this.transmisionRate)
+        }
+
+        getFormatedVelocity () {
+            return `${this.velocity.x} ${this.velocity.y} ${this.velocity.z}`
         }
 
         getVelocity() {
@@ -252,18 +269,38 @@
 
 </script>
 <script>
+   
     //EMITTER SHOULD ONLY EMIT DIFFERENCE BETWEEN 
     //CURRENT AND PREV POS INSTEAD OF VALUE
     // TRANSMIT GYRO (ACCELERATION) => SERVER => TURRET
 
     //OUTPUT SHOULD BE ACCELERATION
     //INPUT IS POSITION
-    const emitter = new Gyroscope(100, 100, 60)
-    const receiver = new Turret(100, 300, 60)
+    emitterSwitch.onchange = () => {
+        if(emitterSwitch.checked) {
+            emitter = new Gyroscope(100, 100, 60)
+            socketE.connect()
+            emitter.emitVelocity()
+        }
+        else {
+            socketE.disconnect()
+            emitter = {}
+        } 
+    }
+
+    recieverSwitch.onchange = () => {
+        if(recieverSwitch.checked) {
+            receiver = new Turret(100, 300, 60)
+            socketR.connect()
+        }
+        else {
+            socketR.disconnect()
+            receiver = {}
+        }
+    }
+
 
     document.getElementById("test").onclick = () => receiver.updateValue()
-
-    emitter.emitVelocity()
 
     canvas.addEventListener("click", () => {
         Object.values(emitter.axis).forEach((axis) => {
@@ -272,7 +309,7 @@
     })
 
     socketR.on("turret-command", (data) => {
-        console.log(data)
+        // console.log(data)
         receiver.updateValue(data)
     })
 
@@ -280,10 +317,9 @@
         window.requestAnimationFrame(animate)
         c.fillStyle = "#b5b3b3"
         c.fillRect(0, 0, canvas.width, canvas.height)
-        
-        emitter.updateByMouse()
-        
-        receiver.updateValue()
+
+        if(emitterSwitch.checked) emitter.updateByMouse()
+        if(recieverSwitch.checked) receiver.updateValue()
     }
     animate();
 </script>

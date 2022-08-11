@@ -1,5 +1,4 @@
-module.exports = ( linux, device ) => {
-    const interface = require("./lib/interface")
+module.exports = ( linux, device, interface ) => {
     const { getIP } = require("./lib/helper");
     const port = process.env.PORT || 5000;
 
@@ -19,7 +18,7 @@ module.exports = ( linux, device ) => {
     require("./lib/socket")(io, app, interface)
 
     server.listen(port, ()=>{
-        interface.log('SERVER', '> listening on : http://' + ip + ":" + port, 1000 * 10)
+        interface.alert('SERVER', 'listening on : http://' + ip + ":" + port, 1000 * 10)
     })
 
 }

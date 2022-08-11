@@ -15,7 +15,7 @@ class Gauge {
     constructor () {
         // CHANGE X Y Z TO ARRAY AND ASSUME AXIS 
         this.axis = {
-            "x": new Axis("z"),
+            "x": new Axis("x"),
             "y": new Axis("y"),
             "z": new Axis("z")
         }
@@ -31,8 +31,53 @@ class Gauge {
         this.iteration = 0;
         // this.popSize = 200;
         // this.diviationMultiplier = 2;
-        this.diviationMultiplier = 0;
+        this.diviationMultiplier = 2;
         this.sampleRate = 1;
+        this.rawData = ''
+    }
+
+    parseDataStream (string) {
+        this.rawData = string
+        const gData = string.toString().split(' ')
+        this.updateValue({
+            x: parseFloat(gData[0]),
+            y: parseFloat(gData[1]),
+            z: parseFloat(gData[2])
+        })
+    }
+
+    getStateData() {
+        if(this.sampleMode){
+            return {
+                diviationMultiplier: this.diviationMultiplier,
+                sampleRate: this.sampleRate,
+                sampleMode: this.sampleMode,
+                dataStream: this.rawData,
+                iteration: this.iteration
+            }
+        } else {
+            return {
+                axis: {
+                    x: this.axis.x.angle,
+                    y: this.axis.y.angle,
+                    z: this.axis.z.angle
+                },
+                filterTop: {
+                    x: this.filter.x.top,
+                    y: this.filter.y.top,
+                    z: this.filter.z.top
+                },
+                filterBottom: {
+                    x: this.filter.x.bottom,
+                    y: this.filter.y.bottom,
+                    z: this.filter.z.bottom
+                },
+                diviationMultiplier: this.diviationMultiplier,
+                sampleRate: this.sampleRate,
+                sampleMode: this.sampleMode,
+                dataStream: this.rawData
+            }
+        }
     }
 
     calcFilter () {
