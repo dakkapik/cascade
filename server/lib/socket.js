@@ -20,11 +20,11 @@ module.exports = (io, app, interface) => {
 
       socket.on("turret-command", lib.handleTurretCommand)
 
-      socket.on("disconnect", (reason) => lib.handleDisconnect(reason, socket.id))
-
-      socket.on("reconnect", (reconnect) => {
-        interface.alert("server", reconnect)
+      socket.on("reset-digital-gyro", () => {
+        
       })
+
+      socket.on("disconnect", (reason) => lib.handleDisconnect(reason, socket.id))
 
       socket.on("turret-data", (data) => console.log(Buffer.from(data).toString()))
 
