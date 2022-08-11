@@ -42,7 +42,7 @@ class Gauge {
         this.filterActive = false;
         this.mean = {};
         this.standardDeviation = {};
-        this.iteration = 0;
+        this.filterIteration = 0;
         // this.popSize = 200;
         // this.diviationMultiplier = 2;
         this.diviationMultiplier = 2;
@@ -72,7 +72,7 @@ class Gauge {
             y: [],
             z: []
         }
-        this.iteration = 0;
+        this.filterIteration = 0;
     }
 
     parseDataStream (string) {
@@ -92,7 +92,7 @@ class Gauge {
                     diviationMultiplier: this.diviationMultiplier,
                     sampleRate: this.sampleRate,
                     sampleMode: this.sampleMode,
-                    iteration: this.iteration,
+                    filterIteration: this.filterIteration,
                 },
                 dataStream: {stream: this.rawData},
             }
@@ -127,7 +127,6 @@ class Gauge {
         this.calcAxisFilter('x')
         this.calcAxisFilter('y')
         this.calcAxisFilter('z')
-        console.log(this.filter)
         this.sampleMode = false
         this.filterActive = true
         this.sampleRate = 2
