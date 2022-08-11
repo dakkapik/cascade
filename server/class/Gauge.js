@@ -1,7 +1,7 @@
 class Axis {
     constructor(name){
         //get sample rate time from super class
-        this.prevAngle = 0;
+        this.prevAngularRate = 0;
         this.angle = 0;
         this.name = name;
     }
@@ -14,11 +14,10 @@ class Axis {
         const time = 1;
         const DEVIATION = 0
         // GET DEVIATION MULTIPLIER FROM SUPER CLASS
-        this.prevAngle = this.angle
-
-        this.angle = this.prevAngle + ((time * (incomingAngleRate - this.prevAngle + DEVIATION))/( 2 * 1000 * 131))
-    
-    }
+        
+        this.angle = this.prevAngularRate + ((time * (incomingAngleRate - this.prevAngularRate + DEVIATION))/( 2 * 1000 * 131))
+        this.prevAngularRate = incomingAngleRate
+    }   
 }
 
 class Gauge {
@@ -61,9 +60,9 @@ class Gauge {
         this.axis.x.angle = 0
         this.axis.y.angle = 0
         this.axis.z.angle = 0
-        this.axis.x.prevAngle = 0
-        this.axis.y.prevAngle = 0
-        this.axis.z.prevAngle = 0
+        this.axis.x.prevAngularRate = 0
+        this.axis.y.prevAngularRate = 0
+        this.axis.z.prevAngularRate = 0
     }
 
     resetSampleMode() {
