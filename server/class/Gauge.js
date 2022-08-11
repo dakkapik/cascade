@@ -14,8 +14,8 @@ class Axis {
         const time = 1;
         const DEVIATION = 0
         // GET DEVIATION MULTIPLIER FROM SUPER CLASS
-        
-        this.angle = this.prevAngularRate + ((time * (incomingAngleRate - this.prevAngularRate + DEVIATION))/( 2 * 1000 * 131))
+
+        this.angle = this.angle + ((time * (incomingAngleRate - this.prevAngularRate + DEVIATION))/( 2 * 1000 * 131))
         this.prevAngularRate = incomingAngleRate
     }   
 }
