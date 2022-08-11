@@ -4,10 +4,9 @@ class Axis {
         this.prevAngle = 0;
         this.angle = 0;
         this.name = name;
-        this.first = true;
     }
     
-    updateValue( value ) {
+    updateAngle( incomingAngleRate ) {
         //TODO:
         //limit angle after full circle return to initial pos
 
@@ -16,7 +15,8 @@ class Axis {
         const DEVIATION = 0
         // GET DEVIATION MULTIPLIER FROM SUPER CLASS
         this.prevAngle = this.angle
-        this.angle = this.prevAngle - value + (time) * (this.angle - this.prevAngle - DEVIATION)/( 2 * 1000 * 131)
+
+        this.angle = this.prevAngle + ((time * (incomingAngleRate - this.prevAngle + DEVIATION))/( 2 * 1000 * 131))
     
     }
 }
@@ -48,7 +48,22 @@ class Gauge {
         // this.diviationMultiplier = 2;
         this.diviationMultiplier = 2;
         this.sampleRate = 1;
+        //SAMPLE RATE MUST COME FROM ABOVE
         this.rawData = ''
+    }
+
+    reset() {
+        this.zeroPosition()
+        this.resetSampleMode()
+    }
+
+    zeroPosition () {
+        this.axis.x.angle = 0
+        this.axis.y.angle = 0
+        this.axis.z.angle = 0
+        this.axis.x.prevAngle = 0
+        this.axis.y.prevAngle = 0
+        this.axis.z.prevAngle = 0
     }
 
     resetSampleMode() {
@@ -145,7 +160,7 @@ class Gauge {
 
         if(this.filterActive) {
             Object.entries(data).forEach(([key, value]) => {
-                if(value > this.filter[key].top || value < this.filter[key].bottom) this.axis[key].updateValue(value * (this.sampleRate / 1000))
+                if(value > this.filter[key].top || value < this.filter[key].bottom) this.axis[key].updateAngle(value * (this.sampleRate / 1000))
             })
         }
     }
