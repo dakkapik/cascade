@@ -16,12 +16,14 @@
 <body>
     <canvas></canvas>
     <div>
-        <button id="test">test</button>
         <input type="checkbox" id="emitter-switch" name="emitter">
         <label for="emitter">EMITTER</label>
         <input type="checkbox" id="reciever-switch" name="reciever" value="reciever">
         <label for="reciever">RECIEVER</label>
-
+    </div>
+    <div>
+        <!-- <button id="test">test socket</button> -->
+        <button id="reset-digital-gyro">reset digital gyro</button>
     </div>
 </body>
 <script src="/socket.io/socket.io.js"></script>
@@ -302,7 +304,8 @@
     }
 
 
-    document.getElementById("test").onclick = () => receiver.updateValue()
+    // document.getElementById("test").onclick = () => receiver.updateValue()
+    document.getElementById("reset-digital-gyro").onclick = () => socketE.emit("reset-digital-gyro")
 
     canvas.addEventListener("click", () => {
         Object.values(emitter.axis).forEach((axis) => {
