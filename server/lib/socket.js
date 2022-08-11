@@ -1,14 +1,17 @@
 module.exports = (io, app, interface) => {
-
+  const Device = require("../class/Device")
   const Gauge = require("../class/Gauge")
 
   const digitalGyro = new Gauge()
 
   const lib = {}
   lib.devices = {}
-  lib.deviceLogId = interface.addItem("DEVICE", JSON.stringify(lib.devices))
+  lib.deviceWaitingId = interface.alert("SERVER", "waiting for devices to connect...")
 
   io.on("connection", (socket) => {
+      // reconnect fn
+      interface.removeAlert(lib.deviceWaitingId)
+
       socket.on("purpose", (purpose) => lib.handleConnect(purpose, socket.id))
 
       socket.on("mouse-pos", lib.handleMouseControl)
@@ -19,36 +22,32 @@ module.exports = (io, app, interface) => {
 
       socket.on("disconnect", (reason) => lib.handleDisconnect(reason, socket.id))
 
+      socket.on("reconnect", (reconnect) => {
+        interface.alert("server", reconnect)
+      })
+
       socket.on("turret-data", (data) => console.log(Buffer.from(data).toString()))
 
       socket.on("gyro-sample-trigger", () => {
-        interface.addItem('SERVER', 'CALCULATING FILTER', 1000 * 30)
         digitalGyro.calcFilter()
+        interface.alert('SERVER', 'calculated mock filter', 1000 * 20)
       })
 
       let i = 0;
       socket.on("gyro-data", (data) => {
+        if(lib.dataStreamId === undefined) {
+          lib.dataStreamId = interface.alert("helmet", data)
+        } else {
+          interface.updateAlert(lib.dataStreamId, data)
+        }
+
         if(data.toString()[0] === '$'){
-          console.log("TRIGGER DETECTED")
-          if(i == 0){
-            i++
-            console.log("INITIALIZING SAMPLE")
-          }else {
-            digitalGyro.calcFilter()
-            interface.addItem('SERVER', 'CALCULATING FILTER', 1000 * 30)
-          }
+          digitalGyro.calcFilter()
+          interface.alert('SERVER', 'calculated filter', 1000 * 20)
           //change sample rate
         } else {
-          const gData = data.toString().split(' ')
-          // console.log(gData)
-          // console.log(parseFloat(gData[0]))
-          // console.log(parseFloat(gData[1]))
-          // console.log(parseFloat(gData[2]))
-          digitalGyro.updateValue({
-            x: parseFloat(gData[0]),
-            y: parseFloat(gData[1]),
-            z: parseFloat(gData[2])
-          })
+          digitalGyro.parseDataStream(data)
+          interface.updateGaugeDisplay(digitalGyro.getStateData())
         }
 
         //TODO: 
@@ -63,36 +62,39 @@ module.exports = (io, app, interface) => {
 
       // ERRORS EXPIRE? ON FIX ERROR? 
       // DEFINETLY HIGH IMPORTANCE
-      socket.on("error", (error) => interface.addItem("SERVER", error, 1000 * 120))
+      socket.on("error", (error) => interface.alert("SERVER", error, 1000 * 120))
   });
 
+  lib.handleTurretCommand = ( command ) => io.to(lib.devices.id['turret']).emit('turret-command', command)
 
-
-
-  lib.handleTurretCommand = ( command ) => io.to(lib.devices['turret']).emit('turret-command', command)
-
-  lib.handleGyroCommand = ( command ) => io.to(lib.devices['helmet']).emit("gyro-command", command)
+  lib.handleGyroCommand = ( command ) => io.to(lib.devices.id['helmet']).emit("gyro-command", command)
   
   lib.handleMouseControl = ( data ) => {
-    io.to(lib.devices['turret']).emit("turret-command", data)
+    io.to(lib.devices.id['turret']).emit("turret-command", data)
   }
 
   lib.handleConnect = (purpose, socketId) => {
 
-    lib.devices[purpose] = socketId
+    lib.devices[purpose] = new Device(socketId) 
 
-    interface.updateItem(lib.deviceLogId, lib.devices)
+    interface.updateUsers(lib.devices)
     
     if (purpose === 'helmet') io.to(socketId).emit("init-gyro")
     if (purpose === 'turret') io.to(socketId).emit('init-turret')
   }
   
   lib.handleDisconnect = ( reason, socketId )  => {
-    Object.entries(lib.devices).forEach(([key, value]) => {
-      if(socketId === value){
-        delete lib.devices[key]
-        interface.updateItem(lib.deviceLogId, lib.devices)
-        interface.addItem("SERVER", key + "disconnected, reason: "+ reason, 30 * 1000)
+    const deviceArray = Object.entries(lib.devices)
+
+    if(deviceArray.length === 1) {
+      lib.deviceWaitingId = interface.alert("SERVER", "waiting for devices to connect...")
+    }
+
+    deviceArray.forEach(([key, value]) => {
+      if(socketId === value.id){
+        lib.devices[key].connected = false
+        interface.updateUsers(lib.devices)
+        interface.alert(key," disconnected, reason: "+ reason, 20 * 1000)
       }
     })
   }

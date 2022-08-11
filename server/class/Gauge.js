@@ -25,7 +25,7 @@ class Gauge {
     constructor () {
         // CHANGE X Y Z TO ARRAY AND ASSUME AXIS 
         this.axis = {
-            "x": new Axis("z"),
+            "x": new Axis("x"),
             "y": new Axis("y"),
             "z": new Axis("z")
         }
@@ -35,7 +35,12 @@ class Gauge {
             y: [],
             z: []
         }
-        this.filter = {};
+        this.filter = {
+            x: {top: 0, bottom:0},
+            y: {top: 0, bottom:0},
+            z: {top: 0, bottom:0}
+        };
+        this.filterActive = false;
         this.mean = {};
         this.standardDeviation = {};
         this.iteration = 0;
@@ -43,6 +48,65 @@ class Gauge {
         // this.diviationMultiplier = 2;
         this.diviationMultiplier = 2;
         this.sampleRate = 1;
+        this.rawData = ''
+    }
+
+    resetSampleMode() {
+        this.sampleMode = true;
+        this.sampleRepo = {
+            x: [],
+            y: [],
+            z: []
+        }
+        this.iteration = 0;
+    }
+
+    parseDataStream (string) {
+        this.rawData = string
+        const gData = string.toString().split(' ')
+        this.updateValue({
+            x: parseFloat(gData[0]),
+            y: parseFloat(gData[1]),
+            z: parseFloat(gData[2])
+        })
+    }
+
+    getStateData() {
+        if(this.sampleMode){
+            return {
+                values: {
+                    diviationMultiplier: this.diviationMultiplier,
+                    sampleRate: this.sampleRate,
+                    sampleMode: this.sampleMode,
+                    iteration: this.iteration,
+                },
+                dataStream: {stream: this.rawData},
+            }
+        } else {
+            return {
+                axis: {
+                    x: this.axis.x.angle,
+                    y: this.axis.y.angle,
+                    z: this.axis.z.angle
+                },
+                filterTop: {
+                    x: this.filter.x.top,
+                    y: this.filter.y.top,
+                    z: this.filter.z.top
+                },
+                filterBottom: {
+                    x: this.filter.x.bottom,
+                    y: this.filter.y.bottom,
+                    z: this.filter.z.bottom
+                },
+                values: {
+                    diviationMultiplier: this.diviationMultiplier,
+                    sampleRate: this.sampleRate,
+                    sampleMode: this.sampleMode,
+                },
+                dataStream: {stream: this.rawData}
+            }
+        }
     }
 
     calcFilter () {
@@ -51,6 +115,7 @@ class Gauge {
         this.calcAxisFilter('z')
         console.log(this.filter)
         this.sampleMode = false
+        this.filterActive = true
         this.sampleRate = 2
     }
 
@@ -76,12 +141,13 @@ class Gauge {
             this.sampleRepo.x.push(data.x)
             this.sampleRepo.y.push(data.y)
             this.sampleRepo.z.push(data.z)
-        } else {
+        }
+
+        if(this.filterActive) {
             Object.entries(data).forEach(([key, value]) => {
                 if(value > this.filter[key].top || value < this.filter[key].bottom) this.axis[key].updateValue(value * (this.sampleRate / 1000))
             })
         }
-        
     }
     
     getAngles() {
