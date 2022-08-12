@@ -20,9 +20,7 @@ module.exports = (io, app, interface) => {
 
       socket.on("turret-command", lib.handleTurretCommand)
 
-      socket.on("reset-digital-gyro", () => {
-        
-      })
+      socket.on("reset-digital-gyro", () => digitalGyro.reset())
 
       socket.on("disconnect", (reason) => lib.handleDisconnect(reason, socket.id))
 
@@ -33,8 +31,10 @@ module.exports = (io, app, interface) => {
         interface.alert('SERVER', 'calculated mock filter', 1000 * 20)
       })
 
-      let i = 0;
       socket.on("gyro-data", (data) => {
+        //delete this on different mode
+        io.emit("raw-gyro-data", data)
+        
         if(lib.dataStreamId === undefined) {
           lib.dataStreamId = interface.alert("helmet", data)
         } else {
@@ -55,8 +55,6 @@ module.exports = (io, app, interface) => {
         
         if(!digitalGyro.sampleMode) {
           io.emit("turret-command", digitalGyro.getAngles())
-          io.emit("turret-log", digitalGyro)
-          // console.log(digitalGyro.getAngles())
         }
       })
 

@@ -46,7 +46,7 @@
         socketR.emit("purpose", "mock-reciver")
     })
 
-    socketR.on("turret-log", (gyro) => console.log(gyro))
+    // socketR.on("turret-log", (gyro) => console.log(gyro))
 </script>
 <script>
     const canvas = document.querySelector("canvas")
@@ -314,7 +314,7 @@
     })
 
     socketR.on("turret-command", (data) => {
-        // console.log(data)
+        console.log(data)
         receiver.updateValue(data)
     })
 
