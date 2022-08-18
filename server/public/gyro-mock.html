@@ -109,7 +109,7 @@
             c.font = '10px Arial'
             c.fillStyle = this.fColor;
 
-            c.fillText(this.name+ ": "+ this.angle, this.pos.x - this.radius, this.pos.y - this.radius - 20)
+            c.fillText(this.name+ ": "+ this.angle * 180 / Math.PI, this.pos.x - this.radius, this.pos.y - this.radius - 20)
             c.beginPath()
             c.ellipse(this.pos.x, this.pos.y, this.radius, this.radius, 0, 0, 2 * Math.PI)
             c.stroke()
@@ -154,14 +154,16 @@
 
             this.sampleMode = true
 
-            this.sampleRate = 100;
+            this.sampleRate = {value: 100, unit: "milsec"};
             this.transmisionRate = 100;
-
+            this.sampleTrigger = 100
             this.prevAngle = this.getAngles()
             this.displacement = {}
             this.velocity = {}
             this.emitter = null;
-            this.noiceScale = 0.0001;
+            this.noiceScale = 0.01;
+            this.triggerChar = '$'
+
 
             setInterval(()=>{
                 const newAngles = this.getAngles()
@@ -173,12 +175,22 @@
                 }
 
                 this.velocity = {
-                    x: this.displacement.x / this.sampleRate + this.getNoice(),
-                    y: this.displacement.y / this.sampleRate + this.getNoice(),
-                    z: this.displacement.z / this.sampleRate + this.getNoice()
+                    x: this.displacement.x / this.sampleRate.value + this.getNoice(),
+                    y: this.displacement.y / this.sampleRate.value + this.getNoice(),
+                    z: this.displacement.z / this.sampleRate.value + this.getNoice()
                 }
                 this.prevAngle = {...newAngles}
-            }, this.sampleRate)
+            }, this.sampleRate.value)
+        }
+
+        connect () {
+            socketE.connect()
+            emitter.emitVelocity()
+        }
+
+        disconnect () {
+            socketE.disconnect()
+            clearInterval(this.emitter)
         }
 
         getNoice () {
@@ -190,6 +202,7 @@
             let iteration = 0;
 
             this.emitter = setInterval(() => {
+                // console.log('emitting velocity')
                 //SLOW EMITION RATE / SAMPLE RATE?
                 if(this.sampleMode){
                     socketE.emit('gyro-data', this.getFormatedVelocity())
@@ -199,7 +212,7 @@
                         // console.log(iteration)
                     } else {
                         this.sampleMode = false
-                        socketE.emit('gyro-sample-trigger')
+                        socketE.emit('gyro-data', this.triggerChar)
                     }
                 } else {
                     socketE.emit('gyro-data', this.getFormatedVelocity())
@@ -210,7 +223,7 @@
         }
 
         getFormatedVelocity () {
-            return `${this.velocity.x} ${this.velocity.y} ${this.velocity.z}`
+            return `${this.velocity.x} ${this.velocity.y} ${this.velocity.z} ${this.sampleRate.value} ${this.sampleRate.unit}`
         }
 
         getVelocity() {
@@ -220,7 +233,7 @@
         setSampleRate (value) {
             //TODO: 
             //SET SAMPLE RATE DINAMICALLY
-            this.sampleRate = value;
+            this.sampleRate.value = value;
         }
 
         setTransmitionRate (value) {
@@ -239,15 +252,16 @@
 
         getAngles() {
             return {
-                x: this.axis.x.angle, 
-                y: this.axis.y.angle,
-                z: this.axis.z.angle
+                x: this.axis.x.angle * 180 / Math.PI, 
+                y: this.axis.y.angle * 180 / Math.PI,
+                z: this.axis.z.angle * 180 / Math.PI
             }
         }
     }
     
     class Turret {
         constructor (x, y, r) {
+            this.connected = false;
             this.x = x;
             this.y = y;
             this.r = r;
@@ -258,10 +272,20 @@
             }
         }
 
+        connect () {
+            socketR.connect()
+            this.connected = true
+        }
+
+        disconnect() {
+            socketR.disconnect()
+            this.connected = false
+        }
+
         updateValue( data ) {
             if(data){
                 Object.entries(data).forEach(([key, value])=> {
-                    this.axis[key].updateValue(value)
+                    this.axis[key].updateValue(value / 180 / Math.PI)
                 })
             } else {
                 Object.values(this.axis).forEach( value => {
@@ -280,26 +304,24 @@
 
     //OUTPUT SHOULD BE ACCELERATION
     //INPUT IS POSITION
+    emitter = new Gyroscope(100, 100, 60)
+    receiver = new Turret(100, 300, 60)
+
     emitterSwitch.onchange = () => {
         if(emitterSwitch.checked) {
-            emitter = new Gyroscope(100, 100, 60)
-            socketE.connect()
-            emitter.emitVelocity()
+            emitter.connect()
         }
         else {
-            socketE.disconnect()
-            emitter = {}
+            emitter.disconnect()
         } 
     }
 
     recieverSwitch.onchange = () => {
         if(recieverSwitch.checked) {
-            receiver = new Turret(100, 300, 60)
-            socketR.connect()
+            receiver.connect()
         }
         else {
-            socketR.disconnect()
-            receiver = {}
+            receiver.disconnect()
         }
     }
 
@@ -313,7 +335,7 @@
         })
     })
 
-    socketR.on("turret-command", (data) => {
+    socketR.on("set-angles", (data) => {
         console.log(data)
         receiver.updateValue(data)
     })
