@@ -54,14 +54,14 @@ module.exports = ( linux, device ) => {
                     socket.emit("turret-data", data)
                 })
                 
-                socket.on("turret-command", (command) => {
+                socket.on("set-angles", (command) => {
                     console.log(command.x)
                     child.stdin.write(command.x +' '+command.y + '\r\n')
                 })
 
             } else {
-                socket.on('turret-command', (command) => {
-                    console.log("command recieved: ", command)
+                socket.on('set-angles', (command) => {
+                    console.log("angles recieved: ", command)
                 })
             }
         } catch (err) {
