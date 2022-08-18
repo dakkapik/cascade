@@ -1,32 +1,49 @@
 class Axis {
-    constructor(name){
+    constructor(sampleRate, diviationMultiplier){
         //get sample rate time from super class
         this.prevAngularRate = 0;
         this.angle = 0;
-        this.name = name;
+        // this.name = name;
+        this.sampleRateRef = sampleRate
+        this.deviationRef = diviationMultiplier
     }
     
     updateAngle( incomingAngleRate ) {
         //TODO:
         //limit angle after full circle return to initial pos
 
-        // using 2 for time, change to get from super class after
-        const time = 1;
-        const DEVIATION = 0
-        // GET DEVIATION MULTIPLIER FROM SUPER CLASS
+        const time = this.sampleRateRef.value;
+    
+        // GETTING DEVIATION FROM PARENT, NOT SURE
+
+        // const DEVIATION = this.deviationRef.value
+        const DEVIATION = 0 
+
 
         this.angle = this.angle + ((time * (incomingAngleRate - this.prevAngularRate + DEVIATION))/( 2 * 1000 * 131))
         this.prevAngularRate = incomingAngleRate
     }   
+
+    getState() {
+        return {
+            name: this.name,
+            angle: this.angle,
+            sampleRateRef: this.sampleRateRef,
+            deviationRef: this.deviationRef
+        }
+    }
 }
 
 class Gauge {
     constructor () {
         // CHANGE X Y Z TO ARRAY AND ASSUME AXIS 
+        this.diviationMultiplier = { value: 2 }
+        this.sampleRate = { value: null, unit: undefined };
+        
         this.axis = {
-            "x": new Axis("x"),
-            "y": new Axis("y"),
-            "z": new Axis("z")
+            "x": new Axis(this.sampleRate, this.diviationMultiplier),
+            "y": new Axis(this.sampleRate, this.diviationMultiplier),
+            "z": new Axis(this.sampleRate, this.diviationMultiplier)
         }
         this.sampleMode = true;
         this.sampleRepo = {
@@ -39,14 +56,13 @@ class Gauge {
             y: {top: 0, bottom:0},
             z: {top: 0, bottom:0}
         };
-        this.filterActive = false;
+
         this.mean = {};
         this.standardDeviation = {};
         this.filterIteration = 0;
         // this.popSize = 200;
-        // this.diviationMultiplier = 2;
-        this.diviationMultiplier = 2;
-        this.sampleRate = 1;
+        
+
         //SAMPLE RATE MUST COME FROM ABOVE
         this.rawData = ''
     }
@@ -77,7 +93,16 @@ class Gauge {
 
     parseDataStream (string) {
         this.rawData = string
-        const gData = string.toString().split(' ')
+        if(string[0] === '$') {
+            this.calcFilter()
+            return
+        }
+        const gData = string.split(' ')
+
+        // slowing down??
+        this.sampleRate.value = parseFloat(gData[3])
+        this.sampleRate.unit = gData[4]
+
         this.updateValue({
             x: parseFloat(gData[0]),
             y: parseFloat(gData[1]),
@@ -85,51 +110,12 @@ class Gauge {
         })
     }
 
-    getStateData() {
-        if(this.sampleMode){
-            return {
-                values: {
-                    diviationMultiplier: this.diviationMultiplier,
-                    sampleRate: this.sampleRate,
-                    sampleMode: this.sampleMode,
-                    filterIteration: this.filterIteration,
-                },
-                dataStream: {stream: this.rawData},
-            }
-        } else {
-            return {
-                axis: {
-                    x: this.axis.x.angle,
-                    y: this.axis.y.angle,
-                    z: this.axis.z.angle
-                },
-                filterTop: {
-                    x: this.filter.x.top,
-                    y: this.filter.y.top,
-                    z: this.filter.z.top
-                },
-                filterBottom: {
-                    x: this.filter.x.bottom,
-                    y: this.filter.y.bottom,
-                    z: this.filter.z.bottom
-                },
-                values: {
-                    diviationMultiplier: this.diviationMultiplier,
-                    sampleRate: this.sampleRate,
-                    sampleMode: this.sampleMode,
-                },
-                dataStream: {stream: this.rawData}
-            }
-        }
-    }
-
+    
     calcFilter () {
         this.calcAxisFilter('x')
         this.calcAxisFilter('y')
         this.calcAxisFilter('z')
         this.sampleMode = false
-        this.filterActive = true
-        this.sampleRate = 2
     }
 
     calcAxisFilter( axis ) {
@@ -146,21 +132,27 @@ class Gauge {
         stdDiv = Math.sqrt(stdDiv / (sampleData.length - 1))
 
         this.standardDeviation[axis] = stdDiv;
-        this.filter[axis] = {top: this.mean[axis] + stdDiv * this.diviationMultiplier, bottom: this.mean[axis] - stdDiv * this.diviationMultiplier}
+        this.filter[axis].top = this.mean[axis] + stdDiv * this.diviationMultiplier.value
+        this.filter[axis].bottom = this.mean[axis] - stdDiv * this.diviationMultiplier.value
     }
 
     updateValue( data ) {
         if(this.sampleMode) {
+            this.filterIteration ++
             this.sampleRepo.x.push(data.x)
             this.sampleRepo.y.push(data.y)
             this.sampleRepo.z.push(data.z)
+            return
         }
+        Object.entries(data).forEach(([key, value]) => {
 
-        if(this.filterActive) {
-            Object.entries(data).forEach(([key, value]) => {
-                if(value > this.filter[key].top || value < this.filter[key].bottom) this.axis[key].updateAngle(value * (this.sampleRate / 1000))
-            })
-        }
+            if(
+                value > this.filter[key].top || 
+                value < this.filter[key].bottom 
+            ) 
+            this.axis[key].updateAngle(value)
+        })
+        
     }
     
     getAngles() {
@@ -170,6 +162,50 @@ class Gauge {
             z: this.axis.z.angle
         }
     }
+
+    getStateData() {
+        if(this.sampleMode){
+            return {
+                values: {
+                    diviationMultiplier: this.diviationMultiplier,
+                    sampleRate: this.sampleRate,
+                    sampleMode: this.sampleMode,
+                    filterIteration: this.filterIteration,
+                },
+                dataStream: {stream: this.rawData},
+            }
+        } else {
+            return {
+                values: {
+                    diviationMultiplier: this.diviationMultiplier,
+                    sampleRate: this.sampleRate,
+                    sampleMode: this.sampleMode,
+                },
+                axis: {
+                    x: this.axis.x.angle,
+                    y: this.axis.y.angle,
+                    z: this.axis.z.angle
+                },
+                filterTop: {
+                    x: this.filter.x.top,
+                    y: this.filter.y.top,
+                    z: this.filter.z.top
+                },
+                filterBottom: {
+                    x: this.filter.x.bottom,
+                    y: this.filter.y.bottom,
+                    z: this.filter.z.bottom
+                },
+                sampleRepoLength: {
+                    x: this.sampleRepo.x.length,
+                    y: this.sampleRepo.y.length,
+                    z: this.sampleRepo.z.length
+                },
+                dataStream: {stream: this.rawData}
+            }
+        }
+    }
+
 }
 
 module.exports = Gauge;
