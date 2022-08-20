@@ -25,8 +25,18 @@ module.exports = (io, app, interface) => {
 
       socket.on("reset-digital-gyro", lib.recievers.resetDigitalGyro)
 
+      socket.on("set-angle", lib.emitters.turretSetAngle)
+
       socket.on("gyro-data", lib.recievers.gyroData)
 
+      socket.on('set-direction', (axis) => {
+        const gData = axis.toString().split(' ')
+        lib.emitters.turretSetAngle({
+          x: gData[0],
+          y: gData[1],
+          z: gData[2]
+        })
+      })
       // ERRORS EXPIRE? ON FIX ERROR? 
       // DEFINETLY HIGH IMPORTANCE
       socket.on("error", ( error ) => lib.recievers.error(error, socket.id))
@@ -40,6 +50,7 @@ lib.recievers = {
     digitalGyro.parseDataStream(data)
 
     lib.interface.updateGaugeDisplay(digitalGyro.getStateData())
+    lib.interface.updateAxisDisplay(digitalGyro.getAxisData())
 
     if(digitalGyro.sampleMode) return
 
