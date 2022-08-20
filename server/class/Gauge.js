@@ -20,8 +20,9 @@ class Axis {
         const DEVIATION = 0 
 
 
-        this.angle = this.angle + ((time * (incomingAngleRate - this.prevAngularRate + DEVIATION))/( 2 * 1000 * 131))
-        this.prevAngularRate = incomingAngleRate
+        // this.angle = this.angle + ((time * (incomingAngleRate - this.prevAngularRate + DEVIATION))/( 2 * 131))
+        this.angle += incomingAngleRate
+        // this.prevAngularRate = incomingAngleRate
     }   
 
     getState() {
@@ -160,6 +161,14 @@ class Gauge {
             x: this.axis.x.angle,
             y: this.axis.y.angle,
             z: this.axis.z.angle
+        }
+    }
+    
+    getAxisData () {
+        return {
+            x: this.axis.x.getState(),
+            y: this.axis.y.getState(),
+            z: this.axis.z.getState()
         }
     }
 
