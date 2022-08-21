@@ -36,8 +36,7 @@ coordinate parseDataInput(std::string& input) {
         if (input[last] == ' ' || input[last] == '\0') {
             values.push_back(std::stof(input.substr(begin, begin - last - 1)));
             begin = ++last;
-        }
-        else {
+        } else {
             last++;
         }
     }
