@@ -63,6 +63,6 @@ void listen_gyro_coordinate(mpu *m);  // unit: degrees / second
 void listen_accl_coordinate(mpu *m);  // unit: g
 void listen_clock_rate(mpu *m);       // unit: Hertz
 
-void mpu_set_sample_rate(mpu *m, int value); //set the sample rate of the clock
+void mpu_set_sample_rate_divisor(mpu *m, int value); //set the sample rate of the clock
 
 #endif
