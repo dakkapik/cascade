@@ -40,10 +40,17 @@ void listen_accl_coordinate(mpu *m) {
 // Gyroscope output rate is 8kHz if the DLPF (digital low pass filter) is disabled (which it is)
 // in case that the DLPF is enabled the Gyroscope output rate would drop to 1kHz
 void listen_clock_rate(mpu *m) {
-
+   
     //Check if the low pass filter is enabled if so the output rate is 1000 if not 8000
-    int gyro_output_rate = (read_raw_data(m->fd, CONFIG) != 0) ? 1000 : 8000;
-    int divisor = read_raw_data(m->fd, SMPLRT_DIV) + 1;
+    int gyro_output_rate;
+
+    if (wiringPiI2CReadReg8(m->fd, CONFIG)) {
+        gyro_output_rate = 1000;
+    } else {
+        gyro_output_rate = 8000;
+    }
+
+    unsigned int divisor = wiringPiI2CReadReg8(m->fd, SMPLRT_DIV) + 1;
 
     m->sample_rate = gyro_output_rate / divisor;
 }
