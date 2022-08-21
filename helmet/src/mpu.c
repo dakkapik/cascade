@@ -63,7 +63,8 @@ void mpu_init(mpu* m, int address) {
     write(m, INT_ENABLE, 0x01);  // Write to interrupt enable register
 }
 
-void mpu_set_sample_rate(mpu* m, int value) {
+// Domain [0, 7]
+void mpu_set_sample_rate_divisor(mpu* m, int value) {
     if (value < 0) return;
     write(m, SMPLRT_DIV, value);
 }
