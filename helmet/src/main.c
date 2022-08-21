@@ -10,7 +10,7 @@ int main(int argc, char* argv[]) {
     mpu m;
     mpu_init(&m, GYRO_LOCATION_I2C);
 
-    mpu_set_sample_rate(&m, FAST_SAMPLE_RATE);
+    mpu_set_sample_rate_divisor(&m, FAST_SAMPLE_RATE);
     listen_clock_rate(&m);
     printf("$ %f\n", m.sample_rate);
 
@@ -23,7 +23,7 @@ int main(int argc, char* argv[]) {
         cycles++;
     }
 
-    mpu_set_sample_rate(&m, NORMAL_SAMPLE_RATE);
+    mpu_set_sample_rate_divisor(&m, NORMAL_SAMPLE_RATE);
     listen_clock_rate(&m);
     printf("$ %f\n", m.sample_rate);
 
