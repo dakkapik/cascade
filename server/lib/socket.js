@@ -1,102 +1,113 @@
+const Device = require("../class/Device")
+const Gauge = require("../class/Gauge")
+
+let digitalGyro = new Gauge()
+
+const lib = {}
+lib.devices = {}
+// lib.recievers = {}
+// lib.emitters = {}
+
 module.exports = (io, app, interface) => {
-  const Device = require("../class/Device")
-  const Gauge = require("../class/Gauge")
-
-  const digitalGyro = new Gauge()
-
-  const lib = {}
-  lib.devices = {}
-  lib.deviceWaitingId = interface.alert("SERVER", "waiting for devices to connect...")
+  /// interface super component here
+  lib.interface = interface;
+  lib.deviceWaitingId = lib.interface.alert("SERVER", "waiting for devices to connect...")
+  lib.io = io;
 
   io.on("connection", (socket) => {
-      // reconnect fn
-      interface.removeAlert(lib.deviceWaitingId)
+      lib.interface.removeAlert(lib.deviceWaitingId)
 
-      socket.on("purpose", (purpose) => lib.handleConnect(purpose, socket.id))
+      socket.on("purpose", (purpose) => lib.recievers.connect(purpose, socket.id))
 
-      socket.on("mouse-pos", lib.handleMouseControl)
-      
-      socket.on("gyro-command", lib.handleGyroCommand)
+      socket.on("disconnect", (reason) => lib.recievers.disconnect(reason, socket.id))
 
-      socket.on("turret-command", lib.handleTurretCommand)
+      socket.on("mouse-pos", lib.recievers.mouseControl)
 
-      socket.on("disconnect", (reason) => lib.handleDisconnect(reason, socket.id))
+      socket.on("reset-digital-gyro", lib.recievers.resetDigitalGyro)
 
-      socket.on("reconnect", (reconnect) => {
-        interface.alert("server", reconnect)
+      socket.on("set-angle", lib.emitters.turretSetAngle)
+
+      socket.on("gyro-data", lib.recievers.gyroData)
+
+      socket.on('set-direction', (axis) => {
+        const gData = axis.toString().split(' ')
+        lib.emitters.turretSetAngle({
+          x: gData[0],
+          y: gData[1],
+          z: gData[2]
+        })
       })
-
-      socket.on("turret-data", (data) => console.log(Buffer.from(data).toString()))
-
-      socket.on("gyro-sample-trigger", () => {
-        digitalGyro.calcFilter()
-        interface.alert('SERVER', 'calculated mock filter', 1000 * 20)
-      })
-
-      let i = 0;
-      socket.on("gyro-data", (data) => {
-        if(lib.dataStreamId === undefined) {
-          lib.dataStreamId = interface.alert("helmet", data)
-        } else {
-          interface.updateAlert(lib.dataStreamId, data)
-        }
-
-        if(data.toString()[0] === '$'){
-          digitalGyro.calcFilter()
-          interface.alert('SERVER', 'calculated filter', 1000 * 20)
-          //change sample rate
-        } else {
-          digitalGyro.parseDataStream(data)
-          interface.updateGaugeDisplay(digitalGyro.getStateData())
-        }
-
-        //TODO: 
-        // change this to only target turret if there is no mock
-        
-        if(!digitalGyro.sampleMode) {
-          io.emit("turret-command", digitalGyro.getAngles())
-          io.emit("turret-log", digitalGyro)
-          // console.log(digitalGyro.getAngles())
-        }
-      })
-
       // ERRORS EXPIRE? ON FIX ERROR? 
       // DEFINETLY HIGH IMPORTANCE
-      socket.on("error", (error) => interface.alert("SERVER", error, 1000 * 120))
+      socket.on("error", ( error ) => lib.recievers.error(error, socket.id))
   });
+}
 
-  lib.handleTurretCommand = ( command ) => io.to(lib.devices.id['turret']).emit('turret-command', command)
-
-  lib.handleGyroCommand = ( command ) => io.to(lib.devices.id['helmet']).emit("gyro-command", command)
-  
-  lib.handleMouseControl = ( data ) => {
-    io.to(lib.devices.id['turret']).emit("turret-command", data)
-  }
-
-  lib.handleConnect = (purpose, socketId) => {
-
-    lib.devices[purpose] = new Device(socketId) 
-
-    interface.updateUsers(lib.devices)
+lib.recievers = {
+  gyroData:         (data) => {
+    if(lib.devices['noice-graph']) lib.emitters.rawData(data)
     
-    if (purpose === 'helmet') io.to(socketId).emit("init-gyro")
-    if (purpose === 'turret') io.to(socketId).emit('init-turret')
-  }
-  
-  lib.handleDisconnect = ( reason, socketId )  => {
+    digitalGyro.parseDataStream(data)
+
+    lib.interface.updateGaugeDisplay(digitalGyro.getStateData())
+    lib.interface.updateAxisDisplay(digitalGyro.getAxisData())
+
+    if(digitalGyro.sampleMode) return
+
+    lib.emitters.turretSetAngle( digitalGyro.getAngles() )    
+  },
+  error:            (error, socketId) => {
     const deviceArray = Object.entries(lib.devices)
 
-    if(deviceArray.length === 1) {
-      lib.deviceWaitingId = interface.alert("SERVER", "waiting for devices to connect...")
+    for(let i = 0; i < deviceArray.length; i++) {
+      const [ key, value ]  = deviceArray[i]
+      if(socketId === value.id){
+        lib.interface.alert(key, "ERROR: "+error, 1000*120)
+        return
+      } 
     }
+    lib.interface.alert("UNDEFINED DEVICE", "ERROR: "+error, 1000*120)
+  },
+  resetDigitalGyro: () => {
+    digitalGyro = new Gauge()
+    lib.interface.alert("SERVER", "reseting digital gyroscope", 10 * 1000)
+    lib.interface.updateGaugeDisplay(digitalGyro.getStateData())
+  },
+  mouseControl:     ( data ) => emitters.turretSetAngle( data ),
 
+  connect:          (purpose, socketId) => {
+
+    lib.devices[purpose] = new Device(socketId) 
+  
+    lib.interface.updateUsers(lib.devices)
+    
+    if (purpose === 'helmet') {lib.emitters.initGyro(socketId); return}
+    if (purpose === 'turret') {lib.emitters.initTurret(socketId); return}
+  },
+  disconnect:       ( reason, socketId )  => {
+    const deviceArray = Object.entries(lib.devices)
+  
+    if(deviceArray.length === 1) {
+      lib.deviceWaitingId = lib.interface.alert("SERVER", "waiting for devices to connect...")
+    }
+  
     deviceArray.forEach(([key, value]) => {
       if(socketId === value.id){
         lib.devices[key].connected = false
-        interface.updateUsers(lib.devices)
-        interface.alert(key," disconnected, reason: "+ reason, 20 * 1000)
+        lib.interface.updateUsers(lib.devices)
+        lib.interface.alert(key," disconnected, reason: "+ reason, 20 * 1000)
       }
     })
   }
 }
 
+
+lib.emitters = {
+  turretSetAngle:   (angle)    => {
+    if(lib.devices['turret']) lib.io.to(lib.devices['turret'].id).emit("turret-set-angles", angle)
+    if(lib.devices['mock-reciver']) lib.io.to(lib.devices['mock-reciver'].id).emit("set-angles", angle)
+  },
+  rawData:          (data)     => lib.io.to(lib.devices['noice-graph'].id).emit('raw-gyro-data', data),
+  initTurret:       (socketId) => lib.io.to(socketId).emit('init-turret'),
+  initGyro:         (socketId) => lib.io.to(socketId).emit("init-gyro")
+}

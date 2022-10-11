@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Noice graph</title>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <script src="https://unpkg.com/mathjs@10.6.1/lib/browser/math.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
+</head>
+<body>
+    <div id="noicePlotGraph" style="width:100%;max-width:700px"></div>
+</body>
+<script>
+    const domain = (new URL(window.location.href));
+    const socket = io(domain.origin);
+    
+    socket.on("connect", () => {
+        socket.emit("purpose", "noice-graph")
+    })
+</script>
+<script>
+    class Ticker {
+      constructor (name) {
+        this.data = []
+        this.layout = {
+          xaxis: {range: [0, this.iteration + 20], title: this.name},
+          yaxis: {range: [-1, 1], title: "degrees per tenth of second"},
+          title: "Noice Graph"
+        }
+      }
+
+      addTicker(name) {
+        this.data.push({ x: [0], y: [0], mode: "lines", name, marker: {color: "#ff5959"}})
+      }
+
+      tic ( pos, value ) {
+        this.iteration ++
+        this.layout.xaxis.range[1] = this.iteration + 20
+
+        this.data[pos].x[this.iteration] = this.iteration
+        this.data[pos].y[this.iteration] = value * 1000000
+        
+        this.draw()
+      }
+
+      draw() {
+        Plotly.newPlot("noicePlotGraph", this.data, this.layout)
+      }
+    }
+    
+    const ticker = new Ticker("Gx")
+
+    ticker.addTicker("Gx")
+    ticker.addTicker("Gy")
+    ticker.addTicker("Gz")
+
+    socket.on("raw-gyro-data", (data) => {
+      const axis = data.split(' ') 
+      // console.log(parseFloat(axis[0]) * 1000000)
+      ticker.tic(0, parseFloat(axis[0]))
+      ticker.tic(1, parseFloat(axis[1]))
+      ticker.tic(2, parseFloat(axis[2]))
+    })
+    </script>
+</html>

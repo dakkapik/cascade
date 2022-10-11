@@ -16,6 +16,7 @@ module.exports = ( linux, device ) => {
         }
     })
 
+    
     socket.on("init-gyro", async () => {
         console.log("initializing gyroscope")
         try {
@@ -28,9 +29,12 @@ module.exports = ( linux, device ) => {
                     socket.emit("gyro-data", data)
                 })
                 
-                socket.on('gyro-command', (command) => {
-                    child.stdin.write(command + '\r\n')
-                })
+                // socket.on('gyro-command', (command) => {
+                //     child.stdin.write(command + '\r\n')
+                // })
+
+                socket.on("disconnect", () => child.kill('SIGINT'))
+
             } else {
                 socket.on('gyro-command', (command) => {
                     console.log("COMMAND REVIEVED: ", command)

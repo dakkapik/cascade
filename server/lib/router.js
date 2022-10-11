@@ -20,4 +20,8 @@ module.exports = (app) => {
     app.get("/gyro-mock", (req, res)=> {
         res.sendFile(path.resolve(__dirname + '/../public/gyro-mock.html'))
     })
+
+    app.get("/noice-graph", (req, res)=> {
+        res.sendFile(path.resolve(__dirname + '/../public/noice-graph.html'))
+    })
 }

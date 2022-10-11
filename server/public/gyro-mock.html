@@ -10,18 +10,72 @@
         html, body {
             font-family: 'Roboto', sans-serif;
             margin: 0;
+            display: flex;
+        }
+
+        #state-display > div{
+            display: flex;
+        }
+
+        
+        #state-display > div > div {
+            width: 180px;
+        }
+
+        #state-display > div > div > div {
+            font-size: small;
+            display: flex;
+            height: 3vh;
+            justify-content: center;
+            border: solid black 1px;
         }
     </style>
 </head>
 <body>
-    <canvas></canvas>
     <div>
-        <button id="test">test</button>
-        <input type="checkbox" id="emitter-switch" name="emitter">
-        <label for="emitter">EMITTER</label>
-        <input type="checkbox" id="reciever-switch" name="reciever" value="reciever">
-        <label for="reciever">RECIEVER</label>
-
+        <canvas></canvas>
+        <div>
+            <input type="checkbox" id="emitter-switch" name="emitter">
+            <label for="emitter">EMITTER</label>
+            <input type="checkbox" id="reciever-switch" name="reciever" value="reciever">
+            <label for="reciever">RECIEVER</label>
+        </div>
+        <div>
+            <!-- <button id="test">test socket</button> -->
+            <button id="reset-digital-gyro">reset digital gyro</button>
+        </div>
+    </div>
+    <div id="state-display">
+        <div>
+            <div id="state-display-title">
+                <div>axis</div>
+                <div>angle</div>
+                <div>displacement</div>
+                <div>velocity</div>
+                <div>velocity + noice</div>
+            </div>
+            <div>
+                <div>X</div>
+                <div id="x-angle"></div>
+                <div id="x-displacement"></div>
+                <div id="x-velocity"></div>
+                <div id="x-noiced"></div>
+            </div>
+            <div>
+                <div>Y</div>
+                <div id="y-angle"></div>
+                <div id="y-displacement"></div>
+                <div id="y-velocity"></div>
+                <div id="y-noiced"></div>
+            </div>
+            <div>
+                <div>Z</div>
+                <div id="z-angle"></div>
+                <div id="z-displacement"></div>
+                <div id="z-velocity"></div>
+                <div id="z-noiced"></div>
+            </div>
+        </div>
     </div>
 </body>
 <script src="/socket.io/socket.io.js"></script>
@@ -43,8 +97,6 @@
     socketR.on("connect", () => {
         socketR.emit("purpose", "mock-reciver")
     })
-
-    socketR.on("turret-log", (gyro) => console.log(gyro))
 </script>
 <script>
     const canvas = document.querySelector("canvas")
@@ -80,7 +132,11 @@
             this.active = false;
         }
 
-        updateValueByMouse = () => {
+        getAngleDegrees () {
+            return this.angle * 180 / Math.PI
+        }
+
+        updateValueByMouse () {
             if(this.active){
                 this.mouseRel.x = mousePos.x - this.pos.x
                 this.mouseRel.y = mousePos.y - this.pos.y
@@ -100,6 +156,10 @@
             this.draw()
         }
 
+        getAngleDegrees() {
+            return this.angle * 180 / Math.PI
+        }
+
         draw () {
             this.cRel.x = Math.cos(this.angle) * this.radius + this.pos.x 
             this.cRel.y = Math.sin(this.angle) * this.radius + this.pos.y
@@ -107,7 +167,7 @@
             c.font = '10px Arial'
             c.fillStyle = this.fColor;
 
-            c.fillText(this.name+ ": "+ this.angle, this.pos.x - this.radius, this.pos.y - this.radius - 20)
+            c.fillText(this.name+ ": "+ this.getAngleDegrees(), this.pos.x - this.radius, this.pos.y - this.radius - 20)
             c.beginPath()
             c.ellipse(this.pos.x, this.pos.y, this.radius, this.radius, 0, 0, 2 * Math.PI)
             c.stroke()
@@ -152,32 +212,65 @@
 
             this.sampleMode = true
 
-            this.sampleRate = 100;
+            this.sampleRate = {value: 1000, unit: "milsec"};
             this.transmisionRate = 100;
-            this.sampleTrigger = 100; 
-
+            this.sampleTrigger = 100
             this.prevAngle = this.getAngles()
             this.displacement = {}
             this.velocity = {}
             this.emitter = null;
-            this.noiceScale = 0.0001;
+            this.noiceScale = 0.01;
+            this.triggerChar = '$'
+
 
             setInterval(()=>{
                 const newAngles = this.getAngles()
-
                 this.displacement = {
                     x: (newAngles.x - this.prevAngle.x),
                     y: (newAngles.y - this.prevAngle.y),
                     z: (newAngles.z - this.prevAngle.z)
                 }
-
                 this.velocity = {
-                    x: this.displacement.x / this.sampleRate + this.getNoice(),
-                    y: this.displacement.y / this.sampleRate + this.getNoice(),
-                    z: this.displacement.z / this.sampleRate + this.getNoice()
+                    x: this.displacement.x / this.sampleRate, 
+                    y: this.displacement.y / this.sampleRate,
+                    z: this.displacement.z / this.sampleRate
+                }
+                this.velocityNoiced = {
+                    x: this.velocity.x + this.getNoice(),
+                    y: this.velocity.y + this.getNoice(),
+                    z: this.velocity.z + this.getNoice()
                 }
                 this.prevAngle = {...newAngles}
-            }, this.sampleRate)
+
+                console.log(this.velocity)
+            }, this.sampleRate.value)
+        }
+
+        connect () {
+            socketE.connect()
+            emitter.emitVelocity()
+        }
+
+        disconnect () {
+            socketE.disconnect()
+            clearInterval(this.emitter)
+        }
+
+        getStateData () {
+            return {
+                angle: {
+                    x: this.axis.x.getAngleDegrees(),
+                    y: this.axis.y.getAngleDegrees(),
+                    z: this.axis.z.getAngleDegrees()
+                },
+                displacement: this.displacement,
+                velocity: this.velocity,
+                noiced: {
+                    x: this.velocityNoiced.x.toFixed(8),
+                    y: this.velocityNoiced.y.toFixed(8),
+                    z: this.velocityNoiced.z.toFixed(8)
+                }
+            }
         }
 
         getNoice () {
@@ -189,6 +282,7 @@
             let iteration = 0;
 
             this.emitter = setInterval(() => {
+                // console.log('emitting velocity')
                 //SLOW EMITION RATE / SAMPLE RATE?
                 if(this.sampleMode){
                     socketE.emit('gyro-data', this.getFormatedVelocity())
@@ -198,7 +292,9 @@
                         // console.log(iteration)
                     } else {
                         this.sampleMode = false
-                        socketE.emit('gyro-sample-trigger')
+
+                        socketE.emit('gyro-data', this.triggerChar)
+
                     }
                 } else {
                     socketE.emit('gyro-data', this.getFormatedVelocity())
@@ -209,7 +305,8 @@
         }
 
         getFormatedVelocity () {
-            return `${this.velocity.x} ${this.velocity.y} ${this.velocity.z}`
+            return `${this.velocity.x} ${this.velocity.y} ${this.velocity.z} ${this.sampleRate.value} ${this.sampleRate.unit}`
+
         }
 
         getVelocity() {
@@ -219,7 +316,7 @@
         setSampleRate (value) {
             //TODO: 
             //SET SAMPLE RATE DINAMICALLY
-            this.sampleRate = value;
+            this.sampleRate.value = value;
         }
 
         setTransmitionRate (value) {
@@ -238,14 +335,16 @@
 
         getAngles() {
             return {
-                x: this.axis.x.angle, 
-                y: this.axis.y.angle,
-                z: this.axis.z.angle
+                x: this.axis.x.getAngleDegrees(), 
+                y: this.axis.y.getAngleDegrees(),
+                z: this.axis.z.getAngleDegrees()
             }
         }
     }
+    
     class Turret {
         constructor (x, y, r) {
+            this.connected = false;
             this.x = x;
             this.y = y;
             this.r = r;
@@ -256,10 +355,20 @@
             }
         }
 
+        connect () {
+            socketR.connect()
+            this.connected = true
+        }
+
+        disconnect() {
+            socketR.disconnect()
+            this.connected = false
+        }
+
         updateValue( data ) {
             if(data){
                 Object.entries(data).forEach(([key, value])=> {
-                    this.axis[key].updateValue(value)
+                    this.axis[key].updateValue(value / 180 / Math.PI)
                 })
             } else {
                 Object.values(this.axis).forEach( value => {
@@ -271,6 +380,8 @@
 
 </script>
 <script>
+
+    const stateDisplay = document.getElementById("state-display")
    
     //EMITTER SHOULD ONLY EMIT DIFFERENCE BETWEEN 
     //CURRENT AND PREV POS INSTEAD OF VALUE
@@ -278,31 +389,28 @@
 
     //OUTPUT SHOULD BE ACCELERATION
     //INPUT IS POSITION
+    emitter = new Gyroscope(100, 100, 60)
+    receiver = new Turret(100, 300, 60)
+
     emitterSwitch.onchange = () => {
         if(emitterSwitch.checked) {
-            emitter = new Gyroscope(100, 100, 60)
-            socketE.connect()
-            emitter.emitVelocity()
+            emitter.connect()
         }
         else {
-            socketE.disconnect()
-            emitter = {}
+            emitter.disconnect()
         } 
     }
 
     recieverSwitch.onchange = () => {
         if(recieverSwitch.checked) {
-            receiver = new Turret(100, 300, 60)
-            socketR.connect()
+            receiver.connect()
         }
         else {
-            socketR.disconnect()
-            receiver = {}
+            receiver.disconnect()
         }
     }
 
-
-    document.getElementById("test").onclick = () => receiver.updateValue()
+    document.getElementById("reset-digital-gyro").onclick = () => socketE.emit("reset-digital-gyro")
 
     canvas.addEventListener("click", () => {
         Object.values(emitter.axis).forEach((axis) => {
@@ -310,8 +418,8 @@
         })
     })
 
-    socketR.on("turret-command", (data) => {
-        // console.log(data)
+    socketR.on("set-angles", (data) => {
+        console.log(data)
         receiver.updateValue(data)
     })
 
@@ -320,8 +428,26 @@
         c.fillStyle = "#b5b3b3"
         c.fillRect(0, 0, canvas.width, canvas.height)
 
-        if(emitterSwitch.checked) emitter.updateByMouse()
+        if(emitterSwitch.checked){
+            emitter.updateByMouse()
+            const stateData = emitter.getStateData()
+            document.getElementById("x-angle").innerHTML = stateData.angle.x
+            document.getElementById("x-displacement").innerHTML = stateData.displacement.x
+            document.getElementById("x-velocity").innerHTML = stateData.velocity.x
+            document.getElementById("x-noiced").innerHTML = stateData.noiced.x
+            document.getElementById("y-angle").innerHTML = stateData.angle.y
+            document.getElementById("y-displacement").innerHTML = stateData.displacement.y
+            document.getElementById("y-velocity").innerHTML = stateData.velocity.y
+            document.getElementById("y-noiced").innerHTML = stateData.noiced.y
+            document.getElementById("z-angle").innerHTML = stateData.angle.z
+            document.getElementById("z-displacement").innerHTML = stateData.displacement.z
+            document.getElementById("z-velocity").innerHTML = stateData.velocity.z
+            document.getElementById("z-noiced").innerHTML = stateData.noiced.z
+        }
+
         if(recieverSwitch.checked) receiver.updateValue()
+
+        
     }
     animate();
 </script>
