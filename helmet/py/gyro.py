@@ -73,7 +73,7 @@ while True:
 	Gz = gyro_z/131.0
 	
 	print (Gx," ",Gy," ",Gz," ",Ax," ",Ay," ",Az,"\n")
-	os.system('cls')
+	os.system('clear')
 	# gx gy gz - ax ay az	
 	# print ("TEST") 	
 	# sleep(0.1)
