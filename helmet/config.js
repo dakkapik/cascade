@@ -18,8 +18,8 @@ environments.production = {
     'httpPort': 5000,
     'httpsPort': 5001,
     'envName': 'production',
-    'mainIP' : '192.168.0.210',
-    'gyroIP' : '192.168.0.101'
+    'mainIP' : '192.168.1.210',
+    'gyroIP' : '192.168.1.101'
 }
 
 //determine which env was passed in the command line
