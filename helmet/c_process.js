@@ -39,7 +39,7 @@ lib.spawnChild = () => {
 
 lib.spawnPyBuild = () => {
     return spawnSync('python3 gyro.py', [], {
-        stdio: ['pipe', null, null],
+        stdio: [null, 'pipe', null],
         cwd: lib.pyDir
     })
 }
