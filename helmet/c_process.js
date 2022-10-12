@@ -3,7 +3,8 @@ const path = require("path");
 
 const lib = {}
 
-lib.baseDir = path.resolve(path.join(__dirname,'src'))
+lib.cDir = path.resolve(path.join(__dirname,'src'))
+lib.pyDir = path.resolve(path.join(__dirname,'py'))
 
 //*TODO:
 /// process to check install of wirepi and install
@@ -11,7 +12,7 @@ lib.baseDir = path.resolve(path.join(__dirname,'src'))
 lib.runBuild = () => {
     return new Promise((resolve, rejects) => {
         exec('gcc -Wall -o a mpu.c main.c -lwiringPi', {
-            'cwd': lib.baseDir
+            'cwd': lib.cDir
         }, (err, stdout, stderr) => {
             if(!err) {
                 // change this, something better
@@ -31,7 +32,15 @@ lib.spawnChild = () => {
 
     return spawn('./a', [] ,{
         stdio: ['pipe', 'pipe', process.stderr],
-        cwd: lib.baseDir
+        cwd: lib.cDir
+    })
+}
+
+
+lib.spawnPyBuild = () => {
+    return spawn('python3 gyro.py', [], {
+        stdio: ['pipe', 'pipe', process.stderr],
+        cwd: lib.pyDir
     })
 }
 

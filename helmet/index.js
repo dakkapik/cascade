@@ -22,7 +22,7 @@ module.exports = ( linux, device ) => {
         try {
             if(linux) {
                 await c_process.runBuild()
-                const child = c_process.spawnChild()
+                const child = c_process.spawnPyBuild()
     
                 child.stdout.on('data', (data) =>{
                     // socket.emit('gyro-sample-trigger')
