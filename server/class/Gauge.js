@@ -93,7 +93,9 @@ class Gauge {
     }
 
     parseDataStream (string) {
-        this.rawData = string
+        this.rawData = Buffer.from(string).toString()
+
+        console.log("DATA: ",this.rawData)
         if(string[0] === '$') {
             this.calcFilter()
             return

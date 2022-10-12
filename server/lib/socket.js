@@ -45,17 +45,16 @@ module.exports = (io, app, interface) => {
 
 lib.recievers = {
   gyroData:         (data) => {
-    console.log(data)
-    // if(lib.devices['noice-graph']) lib.emitters.rawData(data)
+    if(lib.devices['noice-graph']) lib.emitters.rawData(data)
     
-    // digitalGyro.parseDataStream(data)
+    digitalGyro.parseDataStream(data)
 
-    // lib.interface.updateGaugeDisplay(digitalGyro.getStateData())
-    // lib.interface.updateAxisDisplay(digitalGyro.getAxisData())
+    lib.interface.updateGaugeDisplay(digitalGyro.getStateData())
+    lib.interface.updateAxisDisplay(digitalGyro.getAxisData())
 
-    // if(digitalGyro.sampleMode) return
+    if(digitalGyro.sampleMode) return
 
-    // lib.emitters.turretSetAngle( digitalGyro.getAngles() )    
+    lib.emitters.turretSetAngle( digitalGyro.getAngles() )    
   },
   error:            (error, socketId) => {
     const deviceArray = Object.entries(lib.devices)

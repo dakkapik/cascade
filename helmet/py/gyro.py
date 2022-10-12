@@ -1,5 +1,6 @@
 from smbus2	import SMBus		#import SMBus module of I2C
 from time import sleep          #import
+import os
 
 #some MPU6050 Registers and their Address
 PWR_MGMT_1   = 0x6B
@@ -72,6 +73,7 @@ while True:
 	Gz = gyro_z/131.0
 	
 	print (Gx," ",Gy," ",Gz," ",Ax," ",Ay," ",Az,"\n")
+	os.system('cls')
 	# gx gy gz - ax ay az	
 	# print ("TEST") 	
 	# sleep(0.1)
