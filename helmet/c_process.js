@@ -39,9 +39,9 @@ lib.spawnChild = () => {
 
 lib.spawnPyBuild = () => {
     console.log('\x1b[32m%s\x1b[0m', "SPAWING GYRO LISTENER...")
-    
+
     return spawn('python', ['gyro.py'], {
-        stdio: ['ignore', 'pipe', 'ignore'],
+        stdio: ['ignore', 'pipe', process.stderr],
         cwd: lib.pyDir
     })
 }
