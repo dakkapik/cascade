@@ -8,6 +8,4 @@ child.stdout.on('data', (data) =>{
 })
 
 
-child.stderr.on("data", (data) => {
-    console.error("ERROR: ",data)
-})
+process.stderr(child.stderr)
