@@ -8,4 +8,4 @@ child.stdout.on('data', (data) =>{
 })
 
 
-process.stderr(child.stderr)
+process.stderr.pipe(child.stderr)
