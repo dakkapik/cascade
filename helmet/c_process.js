@@ -38,7 +38,7 @@ lib.spawnChild = () => {
 
 
 lib.spawnPyBuild = () => {
-    return spawn('python3', ['gyro.py'], {
+    return spawn('python', ['gyro.py'], {
         stdio: ['ignore', 'pipe', 'ignore'],
         cwd: lib.pyDir
     })
