@@ -74,4 +74,4 @@ while True:
 	print (Gx," ",Gy," ",Gz," ",Ax," ",Ay," ",Az)
 	# gx gy gz - ax ay az	
 	# print ("TEST") 	
-	sleep(0.1)
+	# sleep(0.1)
