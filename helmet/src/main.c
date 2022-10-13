@@ -29,20 +29,20 @@ int main(int argc, char* argv[]) {
     float calcX;
     float calcY;
     float calcZ;
+    int i = 0;
 
     while (1) {
-        int i = 0;
         while(i < 2000){
             listen_gyro_coordinate(&m);
             calcX += m.gyro.x;
             calcY += m.gyro.y;
             calcZ += m.gyro.z;
         }
-        
+        i = 0;
         calcX /= 2000;
         calcY /= 2000;
         calcZ /= 2000;
-
+        printf("check");
         // listen_accl_coordinate(&m);
         // printf("%f %f %f %f %f %f %f", m.gyro.x, m.gyro.y, m.gyro.z,  m.accl.x, m.accl.y, m.accl.z, m.sample_rate);
         printf("\r%f %f %f", calcX, calcY, calcZ);
