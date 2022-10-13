@@ -31,7 +31,7 @@ int main(int argc, char* argv[]) {
         listen_gyro_coordinate(&m);
         listen_accl_coordinate(&m);
         // printf("%f %f %f %f %f %f %f", m.gyro.x, m.gyro.y, m.gyro.z,  m.accl.x, m.accl.y, m.accl.z, m.sample_rate);
-        printf("%f %f %f %f %f %f %f", m.gyro.x, m.gyro.y, m.gyro.z,"\n");
+        printf("%f %f %f %f %f %f %f", m.gyro.x, m.gyro.y, m.gyro.z,"%f\n");
         fflush(stdout);
     }
 
