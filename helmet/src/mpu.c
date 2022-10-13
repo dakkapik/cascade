@@ -19,18 +19,18 @@ short read_raw_data(int fd, int addr) {
 }
 
 void listen_gyro_coordinate(mpu *m) {
-    float gx = read_raw_data(m->fd, GYRO_XOUT_H) / 131.0;
-    float gy = read_raw_data(m->fd, GYRO_YOUT_H) / 131.0;
-    float gz = read_raw_data(m->fd, GYRO_ZOUT_H) / 131.0;
+    float gx = read_raw_data(m->fd, GYRO_XOUT_H);
+    float gy = read_raw_data(m->fd, GYRO_YOUT_H);
+    float gz = read_raw_data(m->fd, GYRO_ZOUT_H);
 
     coordinate result = {gx, gy, gz};
     m->gyro = result;
 }
 
 void listen_accl_coordinate(mpu *m) {
-   float ax = read_raw_data(m->fd, ACCEL_XOUT_H) / 16384.0;
-   float ay = read_raw_data(m->fd, ACCEL_YOUT_H) / 16384.0;
-   float az = read_raw_data(m->fd, ACCEL_ZOUT_H) / 16384.0;
+   float ax = read_raw_data(m->fd, ACCEL_XOUT_H);
+   float ay = read_raw_data(m->fd, ACCEL_YOUT_H);
+   float az = read_raw_data(m->fd, ACCEL_ZOUT_H);
 
    coordinate result =  {ax, ay, az};
    m->accl = result;
@@ -42,13 +42,13 @@ void listen_accl_coordinate(mpu *m) {
 void listen_clock_rate(mpu *m) {
    
     //Check if the low pass filter is enabled if so the output rate is 1000 if not 8000
-    int gyro_output_rate;
+    int gyro_output_rate = 1000;
 
-    if (wiringPiI2CReadReg8(m->fd, CONFIG)) {
-        gyro_output_rate = 1000;
-    } else {
-        gyro_output_rate = 8000;
-    }
+    // if (wiringPiI2CReadReg8(m->fd, CONFIG)) {
+    //     gyro_output_rate = 1000;
+    // } else {
+    //     gyro_output_rate = 8000;
+    // }
 
     unsigned int divisor = wiringPiI2CReadReg8(m->fd, SMPLRT_DIV) + 1;
 
