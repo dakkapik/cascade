@@ -21,8 +21,8 @@ module.exports = ( linux, device ) => {
         console.log("initializing gyroscope")
         try {
             if(linux) {
-                // await c_process.runBuild()
-                const child = c_process.spawnPyBuild()
+                await c_process.runBuild()
+                const child = c_process.spawnChild()
     
                 child.stdout.on('data', (data) =>{
                     // socket.emit('gyro-sample-trigger')
