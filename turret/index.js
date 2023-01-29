@@ -67,7 +67,7 @@ module.exports = ( linux, device ) => {
         } catch (err) {
             if(linux) {
                 
-                socket.emit("error", {device, err})
+                socket.emit("error", {device, err: JSON.stringify(err)})
             } else {
                 console.error(err)
             }

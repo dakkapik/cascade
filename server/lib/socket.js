@@ -5,8 +5,8 @@ let digitalGyro = new Gauge()
 
 const lib = {}
 lib.devices = {}
-// lib.recievers = {}
-// lib.emitters = {}
+lib.recievers = {}
+lib.emitters = {}
 
 module.exports = (io, app, interface) => {
   /// interface super component here
@@ -73,7 +73,7 @@ lib.recievers = {
     lib.interface.alert("SERVER", "reseting digital gyroscope", 10 * 1000)
     lib.interface.updateGaugeDisplay(digitalGyro.getStateData())
   },
-  mouseControl:     ( data ) => emitters.turretSetAngle( data ),
+  mouseControl:     ( data ) => lib.emitters.turretSetAngle( data ),
 
   connect:          (purpose, socketId) => {
 
@@ -106,6 +106,7 @@ lib.emitters = {
   turretSetAngle:   (angle)    => {
     if(lib.devices['turret']) lib.io.to(lib.devices['turret'].id).emit("turret-set-angles", angle)
     if(lib.devices['mock-reciver']) lib.io.to(lib.devices['mock-reciver'].id).emit("set-angles", angle)
+    if(lib.devices['turret-mock']) lib.io.to(lib.devices['turret-mock'].id).emit("set-angles", angle)
   },
   rawData:          (data)     => lib.io.to(lib.devices['noice-graph'].id).emit('raw-gyro-data', data),
   initTurret:       (socketId) => lib.io.to(socketId).emit('init-turret'),
