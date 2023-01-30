@@ -1,4 +1,5 @@
 const {spawn, exec } = require('child_process')
+const path = require("path");
 
 const lib = {};
 
@@ -9,6 +10,7 @@ lib.runBuild = () => {
         }, (err, stdout, stderr) => {
             if(!err) {
                 // change this, something better
+                console.log('subprocess stdout: ', Buffer.from(stdout).toString())
                 console.log('subprocess stdout: ', Buffer.from(stdout).toString())
                 console.log('subprocess stderr: ', Buffer.from(stderr).toString())
                 socket.emit("error", {device, err: Buffer.from(stderr).toString()})
