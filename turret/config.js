@@ -9,7 +9,7 @@ environments.staging = {
     'httpPort': 5000,
     'httpsPort': 5001,
     'envName' : 'stagging',
-    'mainIP' : '192.168.0.210',
+    'mainIP' : '192.168.0.14',
     'gyroIP' : '192.168.0.101'
 }
 
@@ -18,7 +18,7 @@ environments.production = {
     'httpPort': 5000,
     'httpsPort': 5001,
     'envName': 'production',
-    'mainIP' : '192.168.0.210',
+    'mainIP' : '192.168.0.14',
     'gyroIP' : '192.168.0.101'
 }
 

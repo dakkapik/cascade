@@ -2,7 +2,7 @@
 
 const { io } = require("socket.io-client")
 const config = require("./config")
-const {spawn, exec } = require('child_process')
+const {runBuild, spawnChild} = require("./child");
 const path = require("path")
 
 module.exports = ( linux, device ) => {
@@ -18,37 +18,17 @@ module.exports = ( linux, device ) => {
         }
     })
 
-    function runBuild () {
-        return new Promise((resolve, rejects) => {
-            exec('gcc main.cpp -lwiringPi  -lpthread -lstdc++', {
-                'cwd': path.resolve(path.join(__dirname,'src'))
-            }, (err, stdout, stderr) => {
-                if(!err) {
-                    // change this, something better
-                    console.log('subprocess stdout: ', Buffer.from(stdout).toString())
-                    console.log('subprocess stderr: ', Buffer.from(stderr).toString())
-                    socket.emit("error", {device, err: Buffer.from(stderr).toString()})
-                    resolve()
-                } else {
-                    
-                    socket.emit("error", {device, err})
-                    rejects("Subprocess error: ", err)
-                }
-        
-            })
-        })
-    }
+    
 
     socket.on("init-turret", async () => {
         console.log("initializing turret")
         try {
             if(linux) {
-                await runBuild()
-                console.log("starting child")
-                const child = spawn('./a.out', [] , {
-                    stdio: ['pipe','pipe', process.stderr],
-                    cwd: path.resolve(path.join(__dirname,'src'))
-                })
+                await runBuild();
+                
+                console.log("starting child");
+                
+                const child = await spawnChild();
 
                 child.stdout.on('data', (data) =>{
                     socket.emit("turret-data", data)
