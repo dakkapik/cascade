@@ -5,7 +5,7 @@ const config = require("./config")
 const {runBuild, spawnChild} = require("./child");
 const path = require("path")
 
-module.exports = ( linux, device ) => {
+module.exports = ( linux, device, interface ) => {
     /// IMPORT MAIN IP FROM HERE ^^^
     const serverURL = new URL("http://"+config.mainIP + ":"+config.httpPort)
     const socket = io (serverURL.href)
@@ -27,7 +27,7 @@ module.exports = ( linux, device ) => {
                 await runBuild();
                 
                 console.log("starting child");
-                
+
                 const child = await spawnChild();
 
                 child.stdout.on('data', (data) =>{
@@ -45,6 +45,7 @@ module.exports = ( linux, device ) => {
                 })
             }
         } catch (err) {
+            interface.alert("ALERT: ", err , 10 * 1000)
             if(linux) {
                 
                 socket.emit("error", {device, err: JSON.stringify(err)})
