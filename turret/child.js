@@ -13,12 +13,14 @@ lib.runBuild = ( socket ) => {
                 console.log('subprocess stdout: ', Buffer.from(stdout).toString())
                 console.log('subprocess stdout: ', Buffer.from(stdout).toString())
                 console.log('subprocess stderr: ', Buffer.from(stderr).toString())
-                socket.emit("error", {device, err: Buffer.from(stderr).toString()})
+                socket.emit("error", {device:"turret", err: Buffer.from(stderr).toString()})
+                                        //^^^ this should come from global
                 resolve()
             } else {
                 // reject better
                 // take socket out of this function
-                socket.emit("error", {device, err})
+                socket.emit("error", {device:"turret", err})
+                                    //^^^ this should come from global
                 rejects("Subprocess error: ", err)
             }
     
