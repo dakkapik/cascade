@@ -1,5 +1,3 @@
-'use strict'
-
 const { io } = require("socket.io-client")
 const config = require("./config")
 const {runBuild, spawnChild} = require("./child");
