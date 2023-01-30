@@ -1,1 +1,2 @@
-gcc main.cpp -lwiringPi  -lpthread -lstdc++ && ./a.out
+main:
+	gcc main.cpp -lwiringPi  -lpthread -lstdc++ && ./a.out
