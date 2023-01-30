@@ -81,8 +81,8 @@ void set_instruction(std::string* adrs) {
         coordinate result = parseDataInput(instruction);
 
         //Need to figure out a way to translate the coordinates into actual movements of the servos
-        servoWriteMS(servo_pitch, pos(1));
-        servoWriteMS(servo_yaw, pos(2));     
+        servoWriteMS(servo_pitch, 2);
+        servoWriteMS(servo_yaw, 18);     
     }
 
      some.join();
