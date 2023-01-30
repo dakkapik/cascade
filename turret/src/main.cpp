@@ -72,7 +72,8 @@ void set_instruction(std::string* adrs) {
      std::string instruction;
 
      wiringPiSetup();            // Setup of GPIO pins to wiringPi pin layout
-     servoInit(servoPin);        // Initialize PMW pin of servo, in this case 0 (GPIO 17)
+     servoInit(servo_pitch);        // Initialize PMW pin of servo, in this case 0 (GPIO 17)
+     servoInit(servo_yaw);        // Initialize PMW pin of servo, in this case 0 (GPIO 17)
 
      std::thread some(set_instruction, &instruction);
 
