@@ -21,7 +21,7 @@ module.exports = ( linux, device, interface ) => {
         console.log("initializing turret")
         try {
             if(linux) {
-                await runBuild();
+                await runBuild(socket);
                 
                 console.log("starting child");
 

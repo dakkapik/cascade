@@ -3,7 +3,7 @@ const path = require("path");
 
 const lib = {};
 
-lib.runBuild = () => {
+lib.runBuild = ( socket ) => {
     return new Promise((resolve, rejects) => {
         exec('gcc main.cpp -lwiringPi  -lpthread -lstdc++', {
             'cwd': path.resolve(path.join(__dirname,'src'))
@@ -16,7 +16,8 @@ lib.runBuild = () => {
                 socket.emit("error", {device, err: Buffer.from(stderr).toString()})
                 resolve()
             } else {
-                
+                // reject better
+                // take socket out of this function
                 socket.emit("error", {device, err})
                 rejects("Subprocess error: ", err)
             }
