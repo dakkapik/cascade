@@ -9,8 +9,8 @@ environments.staging = {
     'httpPort': 5000,
     'httpsPort': 5001,
     'envName' : 'stagging',
-    'mainIP' : '192.168.1.210',
-    'gyroIP' : '192.168.1.101'
+    'mainIP' : '192.168.2.11',
+    'gyroIP' : '192.168.0.101'
 }
 
 // production env
@@ -18,8 +18,8 @@ environments.production = {
     'httpPort': 5000,
     'httpsPort': 5001,
     'envName': 'production',
-    'mainIP' : '192.168.1.210',
-    'gyroIP' : '192.168.1.101'
+    'mainIP' : '192.168.2.11',
+    'gyroIP' : '192.168.0.101'
 }
 
 //determine which env was passed in the command line
