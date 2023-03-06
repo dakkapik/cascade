@@ -73,7 +73,7 @@ lib.recievers = {
     lib.interface.alert("SERVER", "reseting digital gyroscope", 10 * 1000)
     lib.interface.updateGaugeDisplay(digitalGyro.getStateData())
   },
-  mouseControl:     ( data ) => emitters.turretSetAngle( data ),
+  mouseControl:     ( data ) => lib.emitters.turretSetAngle( data ),
 
   connect:          (purpose, socketId) => {
 
